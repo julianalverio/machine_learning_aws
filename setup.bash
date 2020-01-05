@@ -4,4 +4,6 @@ cp .condarc ~/.condarc
 cd ~
 ./conda/bin/conda init
 source ~/.bashrc
-conda env create -f environment.yml -n test  # fix this!
+cd ~/machine_learning_aws
+conda env create -f environment.yml -n test  # modularize this!
+conda activate test
