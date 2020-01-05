@@ -17,6 +17,7 @@ def create_users(user_list):
 
 def run_setup():
     setup_cmd = 'bash setup.bash'
+    os.system(setup_cmd)
 
 
 if __name__ == '__main__':
