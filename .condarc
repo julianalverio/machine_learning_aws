@@ -3,7 +3,7 @@ always_yes: true
 envs_dirs:
   - /home/ubuntu/conda/envs
 pkgs_dirs:
-  - /home/ubuntu/condapkgs
+  - /home/ubuntu/conda/pkgs
 channels:
   - conda-forge
   - https://repo.anaconda.com/pkgs/main
