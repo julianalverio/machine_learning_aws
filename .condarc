@@ -1,0 +1,13 @@
+report_errors: false
+always_yes: true
+envs_dirs:
+  - /home/ubuntu/conda/envs
+pkgs_dirs:
+  - /home/ubuntu/condapkgs
+channels:
+  - conda-forge
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/free
+  - https://repo.anaconda.com/pkgs/r
+  - https://repo.anaconda.com/pkgs/pro
+auto_activate_base: false
