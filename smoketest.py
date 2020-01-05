@@ -100,3 +100,5 @@ import string
 import tensorflow as tf
 import time
 import warnings
+
+print('Your machine is ready to learn!')

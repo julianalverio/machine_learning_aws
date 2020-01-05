@@ -14,19 +14,6 @@ def authenticate_email():
     return yag
 
 
-def get_user_info():
-    with open('users.csv') as f:
-        reader = csv.reader(f)
-    user_info = [(user, email) for user, email in reader]
-    return user_info
-
-
-def initialize_directories():
-    users = [user for user, _ in get_user_info()]
-    for user in users:
-        os.system('cp -r template %s' % user)
-
-
 # yag = authenticate_email()
 # yag = yagmail.SMTP('machinelearning.uruguay@gmail.com', 'support_vector_machine')
 # content = 'this is a test'
