@@ -50,7 +50,7 @@ from nltk.tokenize import word_tokenize
 from numpy import split
 from numpy.random import permutation
 from pathlib import Path
-from scipy.misc import imread, imshow
+from scipy.misc import imshow
 from scipy.ndimage import rotate
 from sklearn import model_selection
 from sklearn import utils

@@ -6,4 +6,5 @@ cd ~
 source ~/.bashrc
 cd ~/machine_learning_aws
 conda env create -f environment.yml -n test  # modularize this!
+conda init bash
 conda activate test
