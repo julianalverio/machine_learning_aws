@@ -1,3 +1,4 @@
 credentials.csv
+email_credentials.txt
 *.pem
 .DS_Store
