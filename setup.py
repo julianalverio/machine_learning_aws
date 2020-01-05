@@ -8,9 +8,9 @@ def create_user_text_file(password):
         f.write(input_str)
 
 
-def create_users(user_list):
-    user_list = eval(user_list)
-    for user, email in user_list:
+def create_users(users_str):
+    users = users_str.split(',')
+    for user in users:
         create_user_cmd = 'cat create_user.txt | sudo adduser %s' % user
         os.system(create_user_cmd)
 
@@ -23,7 +23,7 @@ def run_setup():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--users', type=str)
-    parser.add_argument('-pwd', type=str)
+    parser.add_argument('--pwd', type=str)
     args = parser.parse_args()
     create_user_text_file(args.pwd)
     create_users(args.users)

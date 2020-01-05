@@ -128,17 +128,18 @@ def assign_students_to_machines():
     num_students = len(user_info)
     num_machines = len([state for _, _, _, state in get_instance_info() if state == 'running'])
     students_per_machine = math.ceil(num_students / num_machines)
-    groups, group = list(), list()
+    groups = list()
+    group = ''
     counter = 0
     for username, _, email in user_info:
         if counter < students_per_machine:
-            group.append((username, email))
+            group += username + ','
         else:
-            groups.append(group)
-            group = list()
+            groups.append(group[:-1])
+            group = ''
             counter = 0
         counter += 1
-    groups.append(group)
+    groups.append(group[:-1])
     return groups
 
 
@@ -171,12 +172,6 @@ def prepare_machine_environments(password):
     print('Done preparing machine environments!')
 
 
-
-
-
-
 prepare_machine_environments('test')
 
-groups = assign_students_to_machines()
-import pdb; pdb.set_trace()
 # start_instances(count=2, instance_type='m5a.large')
