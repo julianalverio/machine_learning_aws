@@ -145,9 +145,7 @@ def assign_students_to_machines():
 
 def run_setup_command(command):
     print(command)
-    time.sleep(2)
-    # os.system(command)
-    return True
+    os.system(command)
 
 
 def prepare_machine_environments(password):
@@ -160,7 +158,7 @@ def prepare_machine_environments(password):
     for student_group, host in student_groups_and_hosts:
         setup_command = 'sudo python machine_learning_aws/setup.py --users %s --pwd %s' % (student_group, password)
         clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
-        ssh_command = 'ssh -i %s -o “StrictHostKeyChecking no” ubuntu@%s %s' % (credential_path, host, clone_command)
+        ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
         commands.append(ssh_command)
     threads = list()
     for command in commands:
@@ -173,5 +171,11 @@ def prepare_machine_environments(password):
 
 
 prepare_machine_environments('test')
+# command = 'ssh -i /Users/julianalverio/code/machine_learning_aws/ec2-keypair.pem ubuntu@3.88.140.12 -o "StrictHostKeyChecking no" "ls /"'
+# print(command)
+# output = os.system(command)
+# print(output)
+
+
 
 # start_instances(count=2, instance_type='m5a.large')

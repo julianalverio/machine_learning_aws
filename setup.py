@@ -16,7 +16,7 @@ def create_users(users_str):
 
 
 def run_setup():
-    setup_cmd = 'bash setup.bash'
+    setup_cmd = 'bash /home/ubuntu/machine_learning_aws/setup.bash'
     os.system(setup_cmd)
 
 
