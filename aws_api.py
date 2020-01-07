@@ -245,7 +245,6 @@ def transfer_data():
         os.system(scp_command)
 
 
-# prepare_machine_environments('test')
 start_instances(count=1, instance_type='m5a.large')
 prepare_machine_environments('test')
 # terminate_instances()
