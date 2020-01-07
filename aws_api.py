@@ -9,6 +9,7 @@ import threading
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import copy
 
 # reference: https://stackabuse.com/automating-aws-ec2-management-with-python-and-boto3/
 '''
@@ -24,7 +25,8 @@ Assumptions about this directory:
 # Given that you have properly set up the AWS CLI, this will generate the .pem file to call the methods below
 def generate_keypair():
     ec2 = boto3.resource('ec2')
-    outfile = open('ec2-keypair.pem', 'w')
+    # outfile = open('ec2-keypair.pem', 'w')
+    outfile = open('/Users/julianalverio/Desktop/ec2-keypair.pem', 'w')
     key_pair = ec2.create_key_pair(KeyName='ec2-keypair')
     KeyPairOut = str(key_pair.key_material)
     print(KeyPairOut)
@@ -175,6 +177,8 @@ def prepare_machine_environments(password):
     [thread.start() for thread in threads]
     [thread.join() for thread in threads]
 
+    commands = list()
+    student_groups_and_hosts = zip(student_groups, hosts)
     for student_group, host in student_groups_and_hosts:
         setup_command = 'sudo python3 setup2.py'
         ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
@@ -259,4 +263,7 @@ def transfer_data():
 
 # terminate_instances()
 # start_instances(count=1, instance_type='m5a.large')
-prepare_machine_environments('test')
+# time.sleep(10)
+# prepare_machine_environments('test')
+
+generate_keypair()

@@ -10,3 +10,7 @@ hosts.txt
 *.h5
 *.hdf5
 *.h*
+
+
+# pycharm
+*idea*
