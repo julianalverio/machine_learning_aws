@@ -174,6 +174,19 @@ def prepare_machine_environments(password):
     print('Now preparing machine environments.')
     [thread.start() for thread in threads]
     [thread.join() for thread in threads]
+
+    for student_group, host in student_groups_and_hosts:
+        setup_command = 'sudo python3 setup2.py'
+        ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
+        commands.append(ssh_command)
+    threads = list()
+    for command in commands:
+        thread = threading.Thread(target=run_setup_command, args=(command,))
+        threads.append(thread)
+    print('Now building conda environments')
+    [thread.start() for thread in threads]
+    [thread.join() for thread in threads]
+
     print('Done! This print statement does not guarantee success.')
 
 

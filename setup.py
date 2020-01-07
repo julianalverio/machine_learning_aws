@@ -25,7 +25,7 @@ def run_setup():
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init bash')
     # os.system('source /home/ubuntu/.bashrc')
-    os.system('conda env create -f environment.yml -n conda_env')
+    # os.system('conda env create -f environment.yml -n conda_env')
     print('I finished the setup python script!')
 
 
