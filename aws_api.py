@@ -43,7 +43,7 @@ def start_instances(count=1, instance_type='t2.micro'):
         InstanceType=instance_type,
         KeyName='ec2-keypair'
     )
-    wait_for_instances(['running', 'terminated'])
+    wait_for_instances(['running', 'terminated', 'shutting-down'])
 
 
 # returns a list of [instance_id, instance_type, ip_address, current_state] lists.
@@ -244,9 +244,6 @@ def transfer_data():
         scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
         os.system(scp_command)
 
-
-start_instances(count=1, instance_type='m5a.large')
-prepare_machine_environments('test')
 # terminate_instances()
-
-# mail_to_list(list_of_emails)
+# start_instances(count=1, instance_type='m5a.large')
+prepare_machine_environments('test')
