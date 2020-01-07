@@ -8,16 +8,21 @@ def create_user_text_file(password):
         f.write(input_str)
 
 
-def create_users(users_str):
-    users = users_str.split(',')
+def create_users(users):
     for user in users:
         create_user_cmd = 'cat create_user.txt | sudo adduser %s' % user
         os.system(create_user_cmd)
 
 
 def run_setup():
-    setup_cmd = 'bash /home/ubuntu/machine_learning_aws/setup.bash'
-    os.system(setup_cmd)
+    os.chdir('/home/ubuntu/machine_learning_aws')
+    os.system('sh /home/ubuntu/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
+    os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubumtu/.condarc')
+    os.system('sh /home/ubuntu/conda/bin/conda init')
+    os.system('sh /home/ubuntu/conda/bin/conda init bash')
+    os.system('source /home/ubuntu/.bashrc')
+    os.system('conda env create -f environment.yml -n conda_env')
+    print('I finished the setup python script!')
 
 
 if __name__ == '__main__':
@@ -26,5 +31,6 @@ if __name__ == '__main__':
     parser.add_argument('--pwd', type=str)
     args = parser.parse_args()
     create_user_text_file(args.pwd)
-    create_users(args.users)
+    users = args.users.split(',')
+    create_users(users)
     run_setup()

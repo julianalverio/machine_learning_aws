@@ -13,10 +13,12 @@ Assumptions about this directory:
 1. There is a file named ec2-keypair.pem
 2. There is folder named template which has all the jupyter notebooks for the class
 3. There is a file named email_credentials.txt which has the password for the bot gmail address
-4. There is a file users.csv where the first column is full names and the second is email addresses for students  
+4. There is a file users.csv where the first column is full names and the second is email addresses for students
+5. You are a collabotor on the machine_learning_aws repo and don't need to manually provide any credentials to push  
 '''
 
 
+# Given that you have properly set up the AWS CLI, this will generate the .pem file to call the methods below
 def generate_keypair():
     ec2 = boto3.resource('ec2')
     outfile = open('ec2-keypair.pem', 'w')
@@ -26,6 +28,7 @@ def generate_keypair():
     outfile.write(KeyPairOut)
 
 
+# Create n instances, wait for them to be 'running', and write down the ip addresses in hosts.txt
 def start_instances(count=1, instance_type='t2.micro'):
     # ami = 'ami-00068cd7555f543d5'  # linux
     ami = 'ami-00a208c7cdba991ea'  # ubuntu
@@ -38,7 +41,6 @@ def start_instances(count=1, instance_type='t2.micro'):
         KeyName='ec2-keypair'
     )
     wait_for_instances(['running', 'terminated'])
-    write_ip_addresses()
 
 
 # returns a list of [instance_id, instance_type, ip_address, current_state] lists.
@@ -61,6 +63,7 @@ def get_instance_info():
     return instance_info
 
 
+# return all instance objects
 def get_instances():
     ec2 = boto3.resource('ec2')
     instances = list()
@@ -69,6 +72,7 @@ def get_instances():
     return instances
 
 
+# wait for all the instances to be in a desired set of states. Retry every 10 seconds.
 def wait_for_instances(target_states=['running']):
     for target_state in target_states:
         assert target_state in ['pending', 'running', 'stopping', 'stopped', 'shutting-down', 'terminated']
@@ -84,6 +88,7 @@ def wait_for_instances(target_states=['running']):
     print('Instances are ready!')
 
 
+# Terminate all the instanes
 def terminate_instances():
     instances = get_instances()
     for instance in instances:
@@ -94,6 +99,8 @@ def terminate_instances():
     wait_for_instances(['terminated'])
 
 
+# Read from users.csv. Generate usernames by removing alphanumeric characters from their email username
+# Return list of (username, user's full name, email address) tuples
 def get_user_info():
     with open('users.csv', 'r') as f:
         reader = csv.reader(f)
@@ -109,6 +116,7 @@ def get_user_info():
 
 
 # You only run this once at the beginning of the course
+# Generate a directory with code notebooks for each user.
 def initialize_directories():
     usernames = [username for username, _, _ in get_user_info()]
     for username in usernames:
@@ -116,13 +124,7 @@ def initialize_directories():
         os.system(cmd)
 
 
-def write_ip_addresses():
-    hosts = [str(ip_address) for _, _, ip_address, _ in get_instance_info() if ip_address is not None]
-    hosts = '\n'.join(hosts)
-    with open('hosts.txt', 'w+') as f:
-        f.write(hosts)
-
-
+# Once you have run start_instances() and the machines are running, partition the students equally among the machines.
 def assign_students_to_machines():
     user_info = get_user_info()  # username, user, email
     num_students = len(user_info)
@@ -143,11 +145,13 @@ def assign_students_to_machines():
     return groups
 
 
+# helper function for threading in prepare_machine_environments()
 def run_setup_command(command):
     print(command)
     os.system(command)
 
 
+# once you've run start_instances(), ssh into the machines to set up clone the repo, set up conda environments, etc.
 def prepare_machine_environments(password):
     hosts = [str(ip_address) for _, _, ip_address, _ in get_instance_info() if ip_address is not None]
     here = os.getcwd()
@@ -156,7 +160,7 @@ def prepare_machine_environments(password):
     student_groups_and_hosts = zip(student_groups, hosts)
     commands = list()
     for student_group, host in student_groups_and_hosts:
-        setup_command = 'sudo python machine_learning_aws/setup.py --users %s --pwd %s' % (student_group, password)
+        setup_command = 'sudo python3 machine_learning_aws/setup.py --users %s --pwd %s' % (student_group, password)
         clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
         ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
         commands.append(ssh_command)
@@ -167,15 +171,56 @@ def prepare_machine_environments(password):
     print('Now preparing machine environments.')
     [thread.start() for thread in threads]
     [thread.join() for thread in threads]
-    print('Done preparing machine environments!')
+    print('Done! This print statement does not guarantee success.')
 
 
+# this needs to be tested
+def backup_machines():
+    live_addresses = list()
+    for _, _, ip_address, state in get_instance_info():
+        if state == 'running':
+            live_addresses.append(ip_address)
+    here = os.getcwd()
+    root_save_dir = os.path.join(here, 'student_copies')
+    try:
+        os.mkdir(save_dir)
+    except FileExistsError:
+        pass
+    for host in live_addresses:
+        host_save_dir = os.path.join(root_save_dir, host)
+        try:
+            os.mkdir(host_save_dir)
+        except FileExistsError:
+            pass
+
+    credential_path = os.path.join(here, 'ec2-keypair.pem')
+    for host in live_addresses:
+        host_save_dir = os.path.join(root_save_dir, host)
+        scp_command = 'scp -i %s -o "StrictHostKeyChecking no" ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, host, host_save_dir)
+        os.system(scp_command)
+        os.chdir(host_save_dir)
+        os.system('git add .')
+        os.system('git commit -m "push for %s"' % host)
+        os.system('git push')
+
+
+# this needs to be tested
+# TODO: can we wget this from dropbox or Google Drive or something?
+def transfer_data():
+    remote_destination = '/home/ubuntu/machine_learning_aws/'  # TODO: edit this
+    local_source = os.path.join(os.getcwd(), 'something')  # TODO: edit this
+    credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
+    live_addresses = list()
+    for _, _, ip_address, state in get_instance_info():
+        if state == 'running':
+            live_addresses.append(ip_address)
+    for host in live_addresses:
+        scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
+        os.system(scp_command)
+
+
+# prepare_machine_environments('test')
+# start_instances(count=1, instance_type='m5a.large')
 prepare_machine_environments('test')
-# command = 'ssh -i /Users/julianalverio/code/machine_learning_aws/ec2-keypair.pem ubuntu@3.88.140.12 -o "StrictHostKeyChecking no" "ls /"'
-# print(command)
-# output = os.system(command)
-# print(output)
+# terminate_instances()
 
-
-
-# start_instances(count=2, instance_type='m5a.large')

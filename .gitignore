@@ -3,3 +3,10 @@ email_credentials.txt
 *.pem
 .DS_Store
 *.docx
+*.csv
+hosts.txt
+*.jpeg
+*.jpg
+*.h5
+*.hdf5
+*.h*

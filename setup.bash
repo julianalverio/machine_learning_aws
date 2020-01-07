@@ -3,8 +3,7 @@ cd ~/machine_learning_aws
 cp .condarc ~/.condarc
 cd ~
 ./conda/bin/conda init
+./conda/bin/conda init bash
 source ~/.bashrc
 cd ~/machine_learning_aws
 conda env create -f environment.yml -n test  # modularize this!
-conda init bash
-source ~/.bashrc
