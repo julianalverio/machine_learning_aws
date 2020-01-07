@@ -6,6 +6,9 @@ import csv
 import re
 import math
 import threading
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # reference: https://stackabuse.com/automating-aws-ec2-management-with-python-and-boto3/
 '''
@@ -174,12 +177,35 @@ def prepare_machine_environments(password):
     print('Done! This print statement does not guarantee success.')
 
 
+def mail_to_list(list_of_mails):
+    for email_addr in list_of_mails:
+        fromaddr = "machinelearning.uruguay@gmail.com"
+        toaddr = email_addr
+        msg = MIMEMultipart()
+        msg['From'] = fromaddr
+        msg['To'] = toaddr
+        msg['Subject'] = "Daily Log In Information"
+        body = "Test mail from python"
+        msg.attach(MIMEText(body, 'plain'))
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.login(fromaddr, "support_vector_machine")
+        text = msg.as_string()
+        server.sendmail(fromaddr, toaddr, text)
+        server.quit()
+
+
 # this needs to be tested
 def backup_machines():
+    # get ip addresses for all live machines
     live_addresses = list()
     for _, _, ip_address, state in get_instance_info():
         if state == 'running':
             live_addresses.append(ip_address)
+
+    # make a directory where you can clone all the local copies of the repo
     here = os.getcwd()
     root_save_dir = os.path.join(here, 'student_copies')
     try:
@@ -207,7 +233,7 @@ def backup_machines():
 # this needs to be tested
 # TODO: can we wget this from dropbox or Google Drive or something?
 def transfer_data():
-    remote_destination = '/home/ubuntu/machine_learning_aws/'  # TODO: edit this
+    remote_destination = '/home/ubuntu/'  # TODO: edit this
     local_source = os.path.join(os.getcwd(), 'something')  # TODO: edit this
     credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
     live_addresses = list()
@@ -220,7 +246,8 @@ def transfer_data():
 
 
 # prepare_machine_environments('test')
-# start_instances(count=1, instance_type='m5a.large')
+start_instances(count=1, instance_type='m5a.large')
 prepare_machine_environments('test')
 # terminate_instances()
 
+# mail_to_list(list_of_emails)

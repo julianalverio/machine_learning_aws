@@ -16,7 +16,7 @@ def create_users(users):
 
 def run_setup():
     os.chdir('/home/ubuntu/machine_learning_aws')
-    os.system('sh /home/ubuntu/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
+    os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
     os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubumtu/.condarc')
     os.system('sh /home/ubuntu/conda/bin/conda init')
     os.system('sh /home/ubuntu/conda/bin/conda init bash')
