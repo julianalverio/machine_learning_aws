@@ -14,3 +14,7 @@ hosts.txt
 
 # pycharm
 *idea*
+*__pycache__*
+
+# Jupyter
+*checkpoint*
