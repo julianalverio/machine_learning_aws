@@ -28,8 +28,7 @@ def run_setup():
     # os.system('conda env create -f environment.yml -n conda_env')
     print('I finished the setup python script!')
 
-
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--users', type=str)
     parser.add_argument('--pwd', type=str)
@@ -38,3 +37,6 @@ if __name__ == '__main__':
     users = args.users.split(',')
     create_users(users)
     run_setup()
+
+if __name__ == '__main__':
+    main()
