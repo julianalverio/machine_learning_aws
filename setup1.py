@@ -34,18 +34,24 @@ def replaceAll(file, searchExp, replaceExp):
         sys.stdout.write(line)
 
 
-
 def run_setup(password):
     create_password_text_file(password)
     os.chdir('/home/ubuntu/machine_learning_aws')
+    print('I AM INSTALLING CONDA')
     os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
+    print('SWAPPING CONDARC')
     os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
+    print('SETTING UP DAILY USER FILES')
     os.system('cp -r /home/ubuntu/machine_learning_aws/template /home/ubuntu/machine_learning_aws/daily_user')
     os.chdir('/home/ubuntu')
+    print('DOING CONDA INIT')
     os.system('./conda/bin/conda init')
     os.system('./conda/bin/conda init bash')
+    print('CHANGING UBUNTU PASSWORD')
     os.system('cat /home/ubuntu/set_password.txt | sudo passwd ubuntu')
-    replaceAll("/home/ubuntu/sshd_config", "PasswordAuthentication no", "PasswordAuthentication yes")
+    print('SWAPPING THE SSH CONFIG FILE')
+    replaceAll("/etc/ssh/sshd_config", "PasswordAuthentication no", "PasswordAuthentication yes")
+    print('RESTARTING SSH SERVICE')
     os.system('sudo service sshd restart')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
