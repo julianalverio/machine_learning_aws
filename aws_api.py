@@ -234,7 +234,8 @@ class AWSHandler():
             Next, copy and paste these commands below all at once, and then press enter.
             
             source ~/.bashrc
-            sudo /home/ubuntu/conda/condabin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+            sudo /home/ubuntu/conda/conda/bin/conda env create -f 
+            /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
             conda init bash
             conda activate conda_env
             jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
