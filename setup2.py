@@ -1,22 +1,21 @@
 import os
 import argparse
 
-def run_setup2(users, port_numbers):
+def run_setup2(users, port_indices):
     """This function is run individually on each Amazon machine.  aws_api.py
     iteratively calls each function on each machine as each AWS machine is
     ssh'ed into."""
-    # Parse arguments
-    user, port_number =
 
-    # Build conda environment
-    os.system('conda env create -f environment.yml -n conda_env')
+    for user, port_index in zip(users, port_indices):
+        # Build conda environment
+        os.system('conda env create -f environment.yml -n conda_env')
 
-    # Now we want to activate the conda environment
-    os.system('conda activate conda_env')
+        # Now we want to activate the conda environment
+        os.system('conda activate conda_env')
 
-    # Start Jupyter notebooks
-    port_number = 8888 + port_index
-    os.system('jupyter notebook --no-browser --port=%s' % port_number)
+        # Start Jupyter notebooks
+        port_number = 8888 + port_index
+        os.system('jupyter notebook --no-browser --port=%s' % port_number)
 
 def main():
     parser = argparse.ArgumentParser()

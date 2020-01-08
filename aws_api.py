@@ -10,7 +10,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import copy
-import re
 
 # reference: https://stackabuse.com/automating-aws-ec2-management-with-python-and-boto3/
 '''
@@ -38,9 +37,10 @@ class AWS_API():
 
     # Create n instances, wait for them to be 'running', and write down the ip addresses in hosts.txt
     def start_instances(self, count=1, instance_type='t2.micro'):
-        # ami = 'ami-00068cd7555f543d5'  # linux
+        #ami = 'ami-00068cd7555f543d5'  # linux
         ami = 'ami-00a208c7cdba991ea'  # ubuntu
-        ec2 = boto3.resource('ec2')
+        ec2 = boto3.resource('ec2', region_name="us-east-1")
+        print("AMI is: {}, instance type is: {}".format(ami, instance_type))
         instances = ec2.create_instances(
             ImageId=ami,
             MinCount=count,
@@ -54,7 +54,7 @@ class AWS_API():
 
     # returns a list of [instance_id, instance_type, ip_address, current_state] lists.
     def get_instance_info(self):
-        client = boto3.client('ec2')
+        client = boto3.client('ec2', region_name="us-east-1")
         data = client.describe_instances()
         # one reservation is one time that you requested machines.
         instance_info = list()
@@ -321,7 +321,7 @@ def main_debugging():
     print(API.get_user_info())
 
     API.terminate_instances()
-    API.start_instances(count=2, instance_type='m5a.large')
+    API.start_instances(count=1, instance_type='t3a.xlarge')
     time.sleep(10)  # TODO: Might not need this
     API.get_instance_info()
     #API.prepare_machine_environments('test')
