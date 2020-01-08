@@ -14,13 +14,20 @@ def create_users(users):
         os.system(create_user_cmd)
 
 
+def create_one_user():
+    create_user_cmd = 'cat create_user.txt | sudo adduser %s' % 'bouncy'
+    os.system(create_user_cmd)
+
+
 def run_setup():
     os.chdir('/home/ubuntu/machine_learning_aws')
     os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
     os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
+    os.system('cp -r /home/ubuntu/machine_learning_aws/template /home/ubuntu/machine_learning_aws/daily_user')
     os.chdir('/home/ubuntu')
     os.system('./conda/bin/conda init')
     os.system('./conda/bin/conda init bash')
+    os.system('usermod - aG sudo username')  # TODO
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init bash')
@@ -34,8 +41,9 @@ def main():
     parser.add_argument('--pwd', type=str)
     args = parser.parse_args()
     create_user_text_file(args.pwd)
-    users = args.users.split(',')
-    create_users(users)
+    create_one_user()
+    # users = args.users.split(',')
+    # create_users(users)
     run_setup()
 
 if __name__ == '__main__':
