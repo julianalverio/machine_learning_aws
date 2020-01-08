@@ -178,7 +178,7 @@ class AWSHandler():
 
         for _, _, host, _ in self.get_instance_info():
             setup_command = 'sudo python3 machine_learning_aws/setup1.py --users placeholder --pwd %s' % (password)
-            clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
+            clone_command = '"rm -rf machine_learning_aws; git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
             print(ssh_command)
             os.system(ssh_command)
@@ -321,7 +321,7 @@ def main():
     API = AWSHandler()  # Instantiate class object
     # API.terminate_instances()
 
-    # API.start_instances(count=2, instance_type='m5a.large')
+    API.start_instances(count=2, instance_type='m5a.large')
     # time.sleep(10)
     API.prepare_machine_environments('test')
 

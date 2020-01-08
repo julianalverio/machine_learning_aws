@@ -1,5 +1,7 @@
 import argparse
 import os
+import fileinput
+import sys
 
 
 def create_user_text_file(password):
@@ -21,10 +23,20 @@ def create_one_user():
 
 def create_password_text_file(password):
     input_str = '%s\n%s\n' % (password, password)
-    with open('set_password.txt', 'w+') as f:
+    with open('/home/ubuntu/set_password.txt', 'w+') as f:
         f.write(input_str)
 
-def run_setup():
+
+def replaceAll(file, searchExp, replaceExp):
+    for line in fileinput.input(file, inplace=1):
+        if searchExp in line:
+            line = line.replace(searchExp, replaceExp)
+        sys.stdout.write(line)
+
+
+
+def run_setup(password):
+    create_password_text_file(password)
     os.chdir('/home/ubuntu/machine_learning_aws')
     os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
     os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
@@ -32,7 +44,8 @@ def run_setup():
     os.chdir('/home/ubuntu')
     os.system('./conda/bin/conda init')
     os.system('./conda/bin/conda init bash')
-    os.system('sudo passwd ubuntu')
+    os.system('cat /home/ubuntu/set_password.txt | sudo passwd ubuntu')
+    replaceAll("/home/ubuntu/sshd_config", "PasswordAuthentication no", "PasswordAuthentication yes")
     os.system('sudo service sshd restart')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
