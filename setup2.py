@@ -9,7 +9,6 @@ def run_setup2():
     # for user, port_index in zip(users, port_indices):
     # Build conda environment
     os.system('conda env create -f environment.yml -n conda_env')
-    os.system('cd /home/ubuntu/machine_learning_aws/')
 
     # Now we want to activate the conda environment
     os.system('conda activate conda_env')

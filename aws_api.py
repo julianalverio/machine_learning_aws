@@ -168,7 +168,6 @@ class AWSHandler():
     def prepare_machine_environments(self, password):
         here = os.getcwd()
         credential_path = os.path.join(here, 'ec2-keypair.pem')
-        import pdb; pdb.set_trace()
         # for _, _, host, _ in self.get_instance_info():
         #     setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup0.py --pwd %s' % password
         #     clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
@@ -185,7 +184,7 @@ class AWSHandler():
 
         counter = 0  # Begin counter at zero
         for _, _, host, _ in self.get_instance_info():
-            setup_command = 'sudo python3 setup2.py --users placeholder ' \
+            setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup2.py --users placeholder ' \
                             '--port_counters %s' % counter
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
             print(ssh_command)
@@ -322,7 +321,7 @@ def main():
     # API.terminate_instances()
 
     API.start_instances(count=2, instance_type='m5a.large')
-    # time.sleep(10)
+    time.sleep(10)
     API.prepare_machine_environments('test')
 
 
