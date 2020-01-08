@@ -10,6 +10,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import copy
+import re
 
 # reference: https://stackabuse.com/automating-aws-ec2-management-with-python-and-boto3/
 '''
@@ -47,6 +48,7 @@ class AWS_API():
             InstanceType=instance_type,
             KeyName='ec2-keypair'
         )
+        print("AMI is {}".format(ami))
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
 
 
@@ -117,7 +119,8 @@ class AWS_API():
                 email = row[1]
                 if not (user and email):
                     continue
-                username = re.sub('[^0-9a-zA-Z]+', '', email.split('@')[0])
+                username = re.sub('[^0-9a-zA-Z]+', '', email.split(
+                    '@')[0]).lower()
                 user_info.append((username, user, email))
         return user_info
 
@@ -182,10 +185,13 @@ class AWS_API():
 
         commands = list()
         student_groups_and_hosts = zip(student_groups, hosts)
+        counter = 0  # Begin counter at zero
         for student_group, host in student_groups_and_hosts:
-            setup_command = 'sudo python3 setup2.py'
+            setup_command = 'sudo python3 setup2.py --users %s ' \
+                            '--port_counters %s' % (student_group, counter)
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
             commands.append(ssh_command)
+            counter += 1  # Increment counter for remote porting
         threads = list()
         for command in commands:
             thread = threading.Thread(target=self.run_setup_command,
@@ -198,15 +204,57 @@ class AWS_API():
         print('Done! This print statement does not guarantee success.')
 
 
-    def mail_to_list(self, list_of_mails):
-        for email_addr in list_of_mails:
+    def mail_to_list(self):
+        # Get user info from method above
+        user_info = self.get_user_info()
+        N = len(user_info)
+
+        # Get usernames, names, and emails
+        usernames = [user_info[i][0] for i in range(N)]
+        names = [user_info[i][1] for i in range(N)]
+        emails = [user_info[i][2] for i in range(N)]
+
+        # Get instance info
+        #instance_info =
+
+        # Iterate through usernames, names, and emails
+        port_counter = 0
+        for uname, name, email_addr in zip(usernames, names, emails):
             fromaddr = "machinelearning.uruguay@gmail.com"
             toaddr = email_addr
             msg = MIMEMultipart()
             msg['From'] = fromaddr
             msg['To'] = toaddr
             msg['Subject'] = "Daily Log In Information"
-            body = "Test mail from python"
+            #body = "Test mail from python"
+            body = """\
+            
+            Dear %s,
+            
+            Below is your login information for this course.  Please
+            copy and paste the following command into your command line (for 
+            Windows Users, use Git Bash:
+            
+            ssh -i ec2-keypair.pem -NfL %s:localhost:8888 %s@IP
+           
+            
+            Sending this command will take you to your assigned AWS EC2 
+            instance.  From here, you can view your Jupyter notebooks for 
+            this course by navigating to your local browser (Chrome is 
+            preferred), and typing:
+            
+            localhost:8888.
+            
+            This will take you to the Jupyter notebooks on AWS that we will 
+            be using for the rest of this course!
+            
+            If you have any technical issues or difficulties with this, please 
+            let us know and we will be happy to help resolve them.  
+            
+            Muchas gracias,
+            GSL Uruguay Technical Team
+            """ % (name, port_counter, uname, )
+
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.ehlo()
@@ -216,6 +264,9 @@ class AWS_API():
             text = msg.as_string()
             server.sendmail(fromaddr, toaddr, text)
             server.quit()
+
+            # Increment port counter by 1 for each user
+            port_counter += 1
 
 
     # this needs to be tested
@@ -265,6 +316,16 @@ class AWS_API():
             scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
             os.system(scp_command)
 
+def main_debugging():
+    API = AWS_API()
+    print(API.get_user_info())
+
+    API.terminate_instances()
+    API.start_instances(count=2, instance_type='m5a.large')
+    time.sleep(10)  # TODO: Might not need this
+    API.get_instance_info()
+    #API.prepare_machine_environments('test')
+
 def main():
     """Main script for running startup of AWS instances."""
     API = AWS_API()  # Instantiate class object
@@ -275,5 +336,5 @@ def main():
 
 
 if __name__=="__main__":
-    main()
+    main_debugging()
 
