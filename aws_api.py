@@ -72,6 +72,8 @@ class AWSHandler():
                     ip_address = instance_dict['PublicIpAddress']
                 else:
                     ip_address = None
+                if state != 'running':
+                    continue
                 instance_info.append([uid, instance_type, ip_address, state])
         return instance_info
 
@@ -155,10 +157,10 @@ class AWSHandler():
         groups.append(group[:-1])
         return groups
 
-    # helper function for threading in prepare_machine_environments()
-    def run_setup_command(self, command):
-        print(command)
-        os.system(command)
+    # # helper function for threading in prepare_machine_environments()
+    # def run_setup_command(self, command):
+    #     print(command)
+    #     os.system(command)
 
     # once you've run start_instances(), ssh into the machines to set up clone the repo, set up conda environments, etc.
     # [instance_id, instance_type, ip_address, current_state] --> instance info
@@ -166,53 +168,29 @@ class AWSHandler():
     def prepare_machine_environments(self, password):
         here = os.getcwd()
         credential_path = os.path.join(here, 'ec2-keypair.pem')
-        commands = list()
-
-        for _, _, host, _ in self.user_info:
-            setup_command = 'sudo python3 machine_learning_aws/setup0.py --pwd %s' % password
+        import pdb; pdb.set_trace()
+        for _, _, host, _ in self.get_instance_info():
+            setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup0.py --pwd %s' % password
             clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
-            commands.append(ssh_command)
-        threads = list()
-        for command in commands:
-            thread = threading.Thread(target=self.run_setup_command, args=(command,))
-            threads.append(thread)
-        print('Now creating users.')
-        [thread.start() for thread in threads]
-        [thread.join() for thread in threads]
+            print(ssh_command)
+            os.system(ssh_command)
 
-        commands = list()
-        for _, _, host, _ in self.user_info:
+        for _, _, host, _ in self.get_instance_info():
             setup_command = 'sudo python3 machine_learning_aws/setup1.py --users placeholder --pwd %s' % (password)
             clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
-            commands.append(ssh_command)
-        threads = list()
-        for command in commands:
-            thread = threading.Thread(target=self.run_setup_command,
-                                      args=(command,))
-            threads.append(thread)
-        print('Now preparing machine environments.')
-        [thread.start() for thread in threads]
-        [thread.join() for thread in threads]
+            print(ssh_command)
+            os.system(ssh_command)
 
-        commands = list()
         counter = 0  # Begin counter at zero
-        for _, _, host, _ in self.user_info:
+        for _, _, host, _ in self.get_instance_info():
             setup_command = 'sudo python3 setup2.py --users placeholder ' \
                             '--port_counters %s' % counter
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
-            commands.append(ssh_command)
+            print(ssh_command)
+            os.system(ssh_command)
             counter += 1  # Increment counter for remote porting
-        threads = list()
-        for command in commands:
-            thread = threading.Thread(target=self.run_setup_command,
-                                      args=(command,))
-            threads.append(thread)
-        print('Now building conda environments')
-        [thread.start() for thread in threads]
-        [thread.join() for thread in threads]
-
         print('Done! This print statement does not guarantee success.')
 
     # uid, username, name of user, email --> user info
@@ -341,9 +319,10 @@ class AWSHandler():
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()  # Instantiate class object
-    # API.start_instances(count=2, instance_type='m5a.large')
     # API.terminate_instances()
-    # time.sleep(10)  #TODO: Might not need this
+
+    # API.start_instances(count=2, instance_type='m5a.large')
+    # time.sleep(10)
     API.prepare_machine_environments('test')
 
 
