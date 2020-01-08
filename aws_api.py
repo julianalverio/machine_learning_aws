@@ -234,7 +234,7 @@ class AWSHandler():
             Next, copy and paste these commands below all at once, and then press enter.
             
             source ~/.bashrc
-            sudo /home/ubuntu/conda/conda/bin/conda env create -f 
+            sudo /home/ubuntu/conda/conda/binconda env create -f 
             /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
             conda init bash
             conda activate conda_env
@@ -331,13 +331,13 @@ class AWSHandler():
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()
-    API.mail_to_list()
+    #API.mail_to_list()
     #API = AWSHandler()  # Instantiate class object
-    # API.terminate_instances()
-
-    #API.start_instances(count=2, instance_type='m5a.large')
-    #time.sleep(10)
-    #API.prepare_machine_environments('test')
+    API.terminate_instances()
+    API.start_instances(count=65, instance_type='t3a.xlarge')
+    time.sleep(120)
+    API.prepare_machine_environments('pantalones')
+    print("DONE")
     # API.terminate_instances()
     #
     # API.start_instances(count=2, instance_type='m5a.large')
