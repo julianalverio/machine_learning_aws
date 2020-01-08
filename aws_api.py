@@ -114,7 +114,7 @@ class AWSHandler():
     # Read from users.csv. Generate usernames by removing alphanumeric characters from their email username
     # Return list of (username, user's full name, email address) tuples
     def get_user_info(self):
-        with open('users.csv', 'r') as f:
+        with open('users.csv', 'rU') as f:
             reader = csv.reader(f)
             user_info = list()
             for idx, row in enumerate(reader):
@@ -223,20 +223,31 @@ class AWSHandler():
             Below is your login information for this course.  
             Mac users and users running Linux: Please
             copy and paste the following command into your command line
-            Windoes users: paste the following command into Git Bash
+            Windoes users: paste the following commands into Git Bash
             
-            ssh -NfL 8888:localhost:8888 ubuntu@%s
-           
-            Leave this running in your command line/Git Bash console.
-            Then open your web browser and type:
-            localhost:8888
+            ssh -NfL 5005:localhost:8888 ubuntu@%s
+            
+            Next, copy and paste this command:
+            ssh -o "StrictHostKeyChecking no" ubuntu@%s
+            
+            Next, copy and paste these commands below all at once, and then press enter.
+            
+            source ~/.bashrc
+            sudo /home/ubuntu/conda/condabin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+            conda init bash
+            conda activate conda_env
+            jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
+            
+            
+            Finally, your web browser and type:
+            localhost:5005
             
             This will take you to the Jupyter notebooks on AWS that we will 
             be using for the rest of this course!  
             
             Mucho amor,
             GSL Uruguay Technical Team
-            """ % (name_of_user, ip_address)
+            """ % (name_of_user, ip_address, ip_address)
 
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -318,11 +329,12 @@ class AWSHandler():
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()  # Instantiate class object
+    API.mail_to_list()
     # API.terminate_instances()
     #
     # API.start_instances(count=2, instance_type='m5a.large')
     # time.sleep(30)
-    API.prepare_machine_environments('test')
+    # API.prepare_machine_environments('test')
 
 
 

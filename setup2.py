@@ -47,16 +47,13 @@
 #
 #
 '''
-ssh -o "StrictHostKeyChecking no" ubuntu@3.84.83.86
+ssh -NfL 5005:localhost:8888 ubuntu@54.89.176.113
+ssh -o "StrictHostKeyChecking no" ubuntu@54.89.176.113
 source ~/.bashrc
 sudo /home/ubuntu/conda/condabin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
 conda init bash
 conda activate conda_env
 jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
-
-
-
-ssh -NfL 5006:localhost:8888 ubuntu@3.81.27.78
 '''
 
 
