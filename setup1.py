@@ -58,9 +58,10 @@ def run_setup(password):
 
     # this is where setup2.py began
     print('I AM NOW BUILDING THE CONDA ENVIRONMENTS')
-    os.system('conda env create -f environment.yml -n conda_env')
+    os.chdir('/home/ubuntu')
+    os.system('./conda/bin/conda env create -f environment.yml -n conda_env')
     print('I AM NOW ACTIVATING THE ENVIRONMENT')
-    os.system('conda activate conda_env')
+    os.system('./conda/bin/conda activate conda_env')
     print('I AM NOW STARTING JUPYTER')
     os.system('jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user')
 
