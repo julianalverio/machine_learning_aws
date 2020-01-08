@@ -58,13 +58,13 @@ def run_setup(password):
 
     # this is where setup2.py began
 
-    ip_address = '3.84.83.86'
-    jupyter_command = 'jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user'
-    activate_command = '. /home/ubuntu/conda/bin/conda activate conda_env && %s' % jupyter_command
-    build_command = '. /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env && %s' % activate_command
-    source_command = 'source ~/.bashrc && %s' % build_command
-    ssh_command = 'ssh ubuntu@%s %s' % (ip_address, source_command)
-    os.system(source_command)
+    # ip_address = '3.84.83.86'
+    # jupyter_command = 'jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user'
+    # activate_command = '. /home/ubuntu/conda/bin/conda activate conda_env && %s' % jupyter_command
+    # build_command = '. /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env && %s' % activate_command
+    # source_command = 'source ~/.bashrc && %s' % build_command
+    # ssh_command = 'ssh ubuntu@%s %s' % (ip_address, source_command)
+    # os.system(source_command)
 
     # os.system('. /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env')
     # os.system('. /home/ubuntu/conda/bin/conda activate conda_env')

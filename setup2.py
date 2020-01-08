@@ -30,7 +30,7 @@
 #     main()
 
 
-import os
+# import os
 
 # ip_address = '3.84.83.86'
 # jupyter_command = 'jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user'
@@ -41,17 +41,19 @@ import os
 # ssh_command = 'ssh -i /Users/julianalverio/code/machine_learning_aws/ec2-keypair.pem ubuntu@%s %s' % (ip_address, source_command)
 
 
-cmd = 'ssh -i /Users/julianalverio/code/machine_learning_aws/ec2-keypair.pem ubuntu@3.84.83.86 "source /home/ubuntu/.bashrc && . export PATH=/home/ubuntu/conda/bin/conda:$PATH && env list"'
-os.system(cmd)
-
-
-
+# cmd = 'ssh -i /Users/julianalverio/code/machine_learning_aws/ec2-keypair.pem ubuntu@3.84.83.86 "source /home/ubuntu/.bashrc && . export PATH=/home/ubuntu/conda/bin/conda:$PATH && env list"'
+# os.system(cmd)
+#
+#
+#
 '''
-ssh -o "StrictHostKeyChecking no" ubuntu@'3.84.83.86'
+ssh -NfL 5005:localhost:8888 ubuntu@54.89.176.113
+ssh -o "StrictHostKeyChecking no" ubuntu@54.89.176.113
 source ~/.bashrc
-sudo conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+sudo /home/ubuntu/conda/condabin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+conda init bash
 conda activate conda_env
-jupyter
+jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
 '''
 
 
