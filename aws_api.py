@@ -196,7 +196,8 @@ class AWSHandler():
     # [instance_id, instance_type, ip_address, current_state] --> instance info
     def mail_to_list(self):
         instance_info = self.get_instance_info()
-        assert len([state for _, _, _, state in instance_info if state == 'running']) == len(self.user_info), 'number of machines does not match number of students'
+        #assert len([state for _, _, _, state in instance_info if state ==
+        # 'running']) == len(self.user_info), 'number of machines does not match number of students'
 
         for (uid, username, name_of_user, email),  (_, _, ip_address, _) in zip(self.user_info, instance_info):
             # user_info = self.get_user_info()
@@ -223,7 +224,7 @@ class AWSHandler():
             Below is your login information for this course.  
             Mac users and users running Linux: Please
             copy and paste the following command into your command line
-            Windoes users: paste the following command into Git Bash
+            Windows users: paste the following command into Git Bash
             
             ssh -NfL 8888:localhost:8888 ubuntu@%s
            
@@ -317,12 +318,14 @@ class AWSHandler():
 
 def main():
     """Main script for running startup of AWS instances."""
-    API = AWSHandler()  # Instantiate class object
+    API = AWSHandler()
+    API.mail_to_list()
+    #API = AWSHandler()  # Instantiate class object
     # API.terminate_instances()
 
-    API.start_instances(count=2, instance_type='m5a.large')
-    time.sleep(10)
-    API.prepare_machine_environments('test')
+    #API.start_instances(count=2, instance_type='m5a.large')
+    #time.sleep(10)
+    #API.prepare_machine_environments('test')
 
 
 
