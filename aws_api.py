@@ -169,12 +169,12 @@ class AWSHandler():
         here = os.getcwd()
         credential_path = os.path.join(here, 'ec2-keypair.pem')
         import pdb; pdb.set_trace()
-        for _, _, host, _ in self.get_instance_info():
-            setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup0.py --pwd %s' % password
-            clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
-            ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
-            print(ssh_command)
-            os.system(ssh_command)
+        # for _, _, host, _ in self.get_instance_info():
+        #     setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup0.py --pwd %s' % password
+        #     clone_command = '"git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
+        #     ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
+        #     print(ssh_command)
+        #     os.system(ssh_command)
 
         for _, _, host, _ in self.get_instance_info():
             setup_command = 'sudo python3 machine_learning_aws/setup1.py --users placeholder --pwd %s' % (password)

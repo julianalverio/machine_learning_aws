@@ -19,6 +19,11 @@ def create_one_user():
     os.system(create_user_cmd)
 
 
+def create_password_text_file(password):
+    input_str = '%s\n%s\n' % (password, password)
+    with open('set_password.txt', 'w+') as f:
+        f.write(input_str)
+
 def run_setup():
     os.chdir('/home/ubuntu/machine_learning_aws')
     os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
@@ -27,7 +32,8 @@ def run_setup():
     os.chdir('/home/ubuntu')
     os.system('./conda/bin/conda init')
     os.system('./conda/bin/conda init bash')
-    os.system('usermod - aG sudo username')  # TODO
+    os.system('sudo passwd ubuntu')
+    os.system('sudo service sshd restart')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init bash')
@@ -40,11 +46,11 @@ def main():
     parser.add_argument('--users', type=str)
     parser.add_argument('--pwd', type=str)
     args = parser.parse_args()
-    create_user_text_file(args.pwd)
-    create_one_user()
+    # create_user_text_file(args.pwd)
+    # create_one_user()
     # users = args.users.split(',')
     # create_users(users)
-    run_setup()
+    run_setup(args.pwd)
 
 if __name__ == '__main__':
     main()
