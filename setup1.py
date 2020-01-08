@@ -38,7 +38,7 @@ def run_setup(password):
     create_password_text_file(password)
     os.chdir('/home/ubuntu/machine_learning_aws')
     print('I AM INSTALLING CONDA')
-    os.system('sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
+    os.system('sudo sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b')
     print('SWAPPING CONDARC')
     os.system('cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
     print('SETTING UP DAILY USER FILES')
@@ -55,13 +55,19 @@ def run_setup(password):
     print('RESTARTING SSH SERVICE')
     os.system('sudo service sshd restart')
 
+
     # this is where setup2.py began
-    print('I AM NOW BUILDING THE CONDA ENVIRONMENTS')
-    # os.chdir('/home/ubuntu')
-    # os.system('./conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env')
-    print('I AM NOW ACTIVATING THE ENVIRONMENT')
-    # os.system('./conda/bin/conda activate conda_env')
-    print('I AM NOW STARTING JUPYTER')
+
+    ip_address = '3.84.83.86'
+    jupyter_command = 'jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user'
+    activate_command = '. /home/ubuntu/conda/bin/conda activate conda_env && %s' % jupyter_command
+    build_command = '. /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env && %s' % activate_command
+    source_command = 'source ~/.bashrc && %s' % build_command
+    ssh_command = 'ssh ubuntu@%s %s' % (ip_address, source_command)
+    os.system(source_command)
+
+    # os.system('. /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env')
+    # os.system('. /home/ubuntu/conda/bin/conda activate conda_env')
     # os.system('jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user')
 
 

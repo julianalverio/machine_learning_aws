@@ -24,7 +24,7 @@ Assumptions about this directory:
 
 class AWSHandler():
     def __init__(self):
-        # uid, username, name of user, emaail
+        # uid, username, name of user, email
         self.user_info = self.get_user_info()
         print(self.user_info)
 
@@ -318,10 +318,10 @@ class AWSHandler():
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()  # Instantiate class object
-    API.terminate_instances()
+    # API.terminate_instances()
 
     API.start_instances(count=2, instance_type='m5a.large')
-    time.sleep(30)
+    time.sleep(10)
     API.prepare_machine_environments('test')
 
 
