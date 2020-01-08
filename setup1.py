@@ -53,8 +53,6 @@ def run_setup(password):
     replaceAll("/etc/ssh/sshd_config", "PasswordAuthentication no", "PasswordAuthentication yes")
     print('RESTARTING SSH SERVICE')
     os.system('sudo service sshd restart')
-    print('SOURCING THE BASHRC')
-    os.system('bash source_bashrc.bash')
 
     # this is where setup2.py began
     print('I AM NOW BUILDING THE CONDA ENVIRONMENTS')

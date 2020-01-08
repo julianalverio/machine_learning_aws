@@ -318,7 +318,7 @@ class AWSHandler():
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()  # Instantiate class object
-    # API.terminate_instances()
+    API.terminate_instances()
 
     API.start_instances(count=2, instance_type='m5a.large')
     time.sleep(30)
