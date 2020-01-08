@@ -177,19 +177,19 @@ class AWSHandler():
 
         for _, _, host, _ in self.get_instance_info():
             setup_command = 'sudo python3 machine_learning_aws/setup1.py --users placeholder --pwd %s' % (password)
-            clone_command = '"rm -rf machine_learning_aws; git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
+            clone_command = '"sudo rm -rf machine_learning_aws; git clone https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, clone_command)
             print(ssh_command)
             os.system(ssh_command)
 
-        counter = 0  # Begin counter at zero
-        for _, _, host, _ in self.get_instance_info():
-            setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup2.py --users placeholder ' \
-                            '--port_counters %s' % counter
-            ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
-            print(ssh_command)
-            os.system(ssh_command)
-            counter += 1  # Increment counter for remote porting
+        # counter = 0  # Begin counter at zero
+        # for _, _, host, _ in self.get_instance_info():
+        #     setup_command = 'sudo python3 /home/ubuntu/machine_learning_aws/setup2.py --users placeholder ' \
+        #                     '--port_counters %s' % counter
+        #     ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s %s' % (credential_path, host, setup_command)
+        #     print(ssh_command)
+        #     os.system(ssh_command)
+        #     counter += 1  # Increment counter for remote porting
         print('Done! This print statement does not guarantee success.')
 
     # uid, username, name of user, email --> user info
@@ -321,7 +321,7 @@ def main():
     # API.terminate_instances()
 
     API.start_instances(count=2, instance_type='m5a.large')
-    time.sleep(10)
+    time.sleep(30)
     API.prepare_machine_environments('test')
 
 

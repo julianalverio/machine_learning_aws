@@ -53,6 +53,18 @@ def run_setup(password):
     replaceAll("/etc/ssh/sshd_config", "PasswordAuthentication no", "PasswordAuthentication yes")
     print('RESTARTING SSH SERVICE')
     os.system('sudo service sshd restart')
+    print('SOURCING THE BASHRC')
+    os.system('bash source_bashrc.bash')
+
+    # this is where setup2.py began
+    print('I AM NOW BUILDING THE CONDA ENVIRONMENTS')
+    os.system('conda env create -f environment.yml -n conda_env')
+    print('I AM NOW ACTIVATING THE ENVIRONMENT')
+    os.system('conda activate conda_env')
+    print('I AM NOW STARTING JUPYTER')
+    os.system('jupyter notebook --no-browser --port=8888 /home/ubuntu/machine_learning_aws/daily_user')
+
+
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init')
     # os.system('sh /home/ubuntu/conda/bin/conda init bash')
