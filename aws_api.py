@@ -321,7 +321,7 @@ def main():
     # API.terminate_instances()
     #
     # API.start_instances(count=2, instance_type='m5a.large')
-    # time.sleep(10)
+    # time.sleep(30)
     API.prepare_machine_environments('test')
 
 
