@@ -1,33 +1,42 @@
+"""AWS API script for setting up all of our EC2 machines.  Our class object
+AWSHandler() also makes calls to other relevant scripts in this repository. """
+
 import boto3
-from pprint import pprint
 import time
 import os
 import csv
 import re
 import math
-import threading
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import copy
 
 # reference: https://stackabuse.com/automating-aws-ec2-management-with-python-and-boto3/
+
 '''
 Assumptions about this directory:
 1. There is a file named ec2-keypair.pem
 2. There is folder named template which has all the jupyter notebooks for the class
 3. There is a file named email_credentials.txt which has the password for the bot gmail address
 4. There is a file users.csv where the first column is full names and the second is email addresses for students
-5. You are a collabotor on the machine_learning_aws repo and don't need to manually provide any credentials to push  
+5. You are a collaborator on the machine_learning_aws repo and don't need to manually provide any credentials to push  
 '''
 
 
 class AWSHandler():
+    """Main object for starting and stopping instances, creating new
+    instances, retrieving instance and user information, and sending emails
+    to users for information on their assigned AWS instances.
+    """
+
     def __init__(self):
         self.user_info = self.get_user_info()
 
-    # Given that you have properly set up the AWS CLI, this will generate the .pem file to call the methods below
+
     def generate_keypair(self):
+        """Given that you have properly set up the AWS CLI, this will generate
+        the .pem file to call the methods below.  This cannot be done if
+        someone else has already """
         ec2 = boto3.resource('ec2')
         # outfile = open('ec2-keypair.pem', 'w')
         key_pair = ec2.create_key_pair(KeyName='ec2-keypair2')
@@ -51,6 +60,28 @@ class AWSHandler():
             InstanceType=instance_type,
             KeyName='ec2-keypair'
         )
+        print("AMI is {}".format(ami))
+        self.wait_for_instances(['running', 'terminated', 'shutting-down'])
+
+    def restart_instances(self, count=None, instance_type='t3a.xlarge'):
+        if not count:
+            count = len(self.user_info)
+        ec2 = boto3.resource('ec2', region_name="us-east-1")
+        print("AMI is: {}, instance type is: {}".format(ami, instance_type))
+        instances = self.get_instances()
+        # Now iterate through instances
+        instance_ids = []
+        for instance in instances:
+            instance_ids.append(instance.instance_id)
+        # Now restart all instances at once
+        try:
+            ec2.reboot_instances(InstanceIds=instance_ids, DryRun=True)
+        except ClientError as e:
+            if 'DryRunOperation' not in str(e):
+                print("You don't have permission to reboot instances.")
+                raise
+
+
         print("AMI is {}".format(ami))
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
 
@@ -98,20 +129,38 @@ class AWSHandler():
             ready = all([state in target_states for state in states])
         print('Instances are ready!')
 
-    # Terminate all the instanes
+    # Terminate all the instances
     def terminate_instances(self):
         instances = self.get_instances()
         for instance in instances:
             try:
                 instance.terminate()
             except:
-                pass
+                print("Unable to terminate instance %s" % instance)
         self.wait_for_instances(['terminated'])
+    
+    # Stop all the instances
+    def hibernate_instances(self):
+        """Function for stopping all active instances at the end of a work
+        session"""
+        instances = self.get_instances()
+        for instance in instances:
+            try:
+                instance.terminate()
+            except:
+                print("Unable to hibernate instance %s" % instance)
+        self.wait_for_instances(['stopping', 'stopped', 'terminated'])
 
 
-    # Read from users.csv. Generate usernames by removing alphanumeric characters from their email username
-    # Return list of (username, user's full name, email address) tuples
+
     def get_user_info(self):
+        """Read from users.csv. Generate usernames by removing alphanumeric
+        characters from their email username.
+
+        Returns:
+             list of (username, user's full name, email address) tuples."""
+
+        # Opens users file and reads row
         with open('users.csv', 'rU') as f:
             reader = csv.reader(f)
             user_info = list()
@@ -312,30 +361,45 @@ class AWSHandler():
             os.system('git commit -m "push for %s"' % host)
             os.system('git push')
 
-    # this is not done
-    def push_button(self):
-        self.start_instances()
-        self.prepare_machine_environments()
-        # self.mail_to_list()
+    # this needs to be tested
+    # TODO: can we wget this from dropbox or Google Drive or something?
+    def transfer_data(self):
+        remote_destination = '/home/ubuntu/'  # TODO: edit this
+        local_source = os.path.join(os.getcwd(), 'something')  # TODO: edit this
+        credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
+        live_addresses = list()
+        for _, _, ip_address, state in self.get_instance_info():
+            if state == 'running':
+                live_addresses.append(ip_address)
+        for host in live_addresses:
+            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
+            os.system(scp_command)
+
+    def full_start(self, email=True):
+        self.terminate_instances()
+        self.start_instances(count=65, instance_type='t3a.xlarge')
+        time.sleep(120)
+        self.prepare_machine_environments('pantalones')
+
+
 
 
 def main():
-    """Main script for running startup of AWS instances."""
-    API = AWSHandler()
-    # API.generate_keypair()
-    #API.mail_to_list()
-    #API = AWSHandler()  # Instantiate class object
-    # API.terminate_instances()
-    # API.start_instances(count=65, instance_type='t3a.xlarge')
-    # API.prepare_machine_environments('pantalones')
-    # API.get_available_ip_addresses()
-    API.mail_to_list()
-    # API.terminate_instances()
-    #
-    # API.start_instances(count=2, instance_type='m5a.large')
-    # time.sleep(30)
-    # API.prepare_machine_environments('test')
+    """Main script for running AWS API commands."""
+    EMAIL = True
+    FULL_START = False
+    ROLLING_START = False
 
+    # Instantiate class instance
+    API = AWSHandler()
+
+    # Based off of boolean flags, run specific commands for AWS
+    if FULL_START:
+        API.start_instances(count=65, instance_type='t3a.xlarge')
+    elif ROLLING_START:
+        API.start_instances()
+    if EMAIL:
+        API.mail_to_list()
 
 
 if __name__=="__main__":
