@@ -24,15 +24,13 @@ Assumptions about this directory:
 
 class AWSHandler():
     def __init__(self):
-        # uid, username, name of user, email
         self.user_info = self.get_user_info()
-        print(self.user_info)
 
     # Given that you have properly set up the AWS CLI, this will generate the .pem file to call the methods below
     def generate_keypair(self):
         ec2 = boto3.resource('ec2')
         # outfile = open('ec2-keypair.pem', 'w')
-        key_pair = ec2.create_key_pair(KeyName='ec2-keypair')
+        key_pair = ec2.create_key_pair(KeyName='ec2-keypair2')
         KeyPairOut = str(key_pair.key_material)
         print(KeyPairOut)
         with open('ec2-keypair.pem', 'w+') as f:
@@ -157,6 +155,7 @@ class AWSHandler():
         groups.append(group[:-1])
         return groups
 
+
     # # helper function for threading in prepare_machine_environments()
     # def run_setup_command(self, command):
     #     print(command)
@@ -196,27 +195,19 @@ class AWSHandler():
     # [instance_id, instance_type, ip_address, current_state] --> instance info
     def mail_to_list(self):
         instance_info = self.get_instance_info()
-        #assert len([state for _, _, _, state in instance_info if state ==
-        # 'running']) == len(self.user_info), 'number of machines does not match number of students'
 
-        for (uid, username, name_of_user, email),  (_, _, ip_address, _) in zip(self.user_info, instance_info):
-            # user_info = self.get_user_info()
-            # N = len(user_info)
-
-            # # Get usernames, names, and emails
-            # usernames = [user_info[i][0] for i in range(N)]
-            # names = [user_info[i][1] for i in range(N)]
-            # emails = [user_info[i][2] for i in range(N)]
-
-            # Iterate through usernames, names, and emails
-            # port_counter = 0
-            # for uname, name, email_addr in zip(usernames, names, emails):
+        broken_emails = list()
+        ip_address_to_useremail_user = dict()
+        num_users = len(self.user_info)
+        for idx, ((uid, username, name_of_user, email),  (_, _, ip_address, _)) in enumerate(zip(self.user_info, instance_info)):
+            ip_address_to_useremail_user[ip_address] = [email, username]
+            print('Sending email %s out of %s' % ((idx + 1), num_users))
             fromaddr = "machinelearning.uruguay@gmail.com"
             toaddr = email
             msg = MIMEMultipart()
             msg['From'] = fromaddr
             msg['To'] = toaddr
-            msg['Subject'] = "Daily Log In Information"
+            msg['Subject'] = "Daily Log In Instructions"
             body = """\
             
             Hola %s,
@@ -226,23 +217,32 @@ class AWSHandler():
             copy and paste the following command into your command line.
             Windows users: paste the following command into Git Bash
 
-            ssh -NfL 5005:localhost:8888 ubuntu@%s
             
             Next, copy and paste this command:
             ssh -o "StrictHostKeyChecking no" ubuntu@%s
             
-            Next, copy and paste these commands below all at once, and then press enter.
+            Next, copy and paste these commands one at a time.
             
             source ~/.bashrc
-            sudo /home/ubuntu/conda/conda/binconda env create -f 
-            /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+            
+            
+            Make sure you paste this command below in ONE line:
+            sudo /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+            
             conda init bash
+            
             conda activate conda_env
+            
             jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
+            
+            
+            Paste this command:
+            ssh -NfL 5005:localhost:8888 ubuntu@%s
             
             
             Finally, your web browser and type:
             localhost:5005
+            
             
             This will take you to the Jupyter notebooks on AWS that we will 
             be using for the rest of this course!  
@@ -250,6 +250,8 @@ class AWSHandler():
             Mucho amor,
             GSL Uruguay Technical Team
             """ % (name_of_user, ip_address, ip_address)
+
+            body = 'We are testing some things, please ignore this :) '
 
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -261,9 +263,22 @@ class AWSHandler():
             server.sendmail(fromaddr, toaddr, text)
             server.quit()
 
-            # # Increment port counter by 1 for each user
-            # port_counter += 1
+        print('This is the information for the broken email addresses')
+        print(broken_emails)
+        return ip_address_to_useremail_user
 
+    def get_available_ip_addresses(self):
+        instance_info = self.get_instance_info()
+        ip_addresses = [ip_address for _, _, ip_address, _ in instance_info]
+        ip_address_to_useremail_user = dict()
+        for idx, ((uid, username, name_of_user, email), (_, _, ip_address, _)) in enumerate(zip(self.user_info, instance_info)):
+            ip_address_to_useremail_user[ip_address] = [email, username]
+        remaining_ip_addresses = list()
+        for address in ip_addresses:
+            if address not in ip_address_to_useremail_user:
+                remaining_ip_addresses.append(address)
+        print('remaining ip addresses:', remaining_ip_addresses)
+        return remaining_ip_addresses
 
     # this needs to be tested
     def backup_machines(self):
@@ -297,47 +312,24 @@ class AWSHandler():
             os.system('git commit -m "push for %s"' % host)
             os.system('git push')
 
-
-    # this needs to be tested
-    # TODO: can we wget this from dropbox or Google Drive or something?
-    def transfer_data(self):
-        remote_destination = '/home/ubuntu/'  # TODO: edit this
-        local_source = os.path.join(os.getcwd(), 'something')  # TODO: edit this
-        credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
-        live_addresses = list()
-        for _, _, ip_address, state in self.get_instance_info():
-            if state == 'running':
-                live_addresses.append(ip_address)
-        for host in live_addresses:
-            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
-            os.system(scp_command)
-
+    # this is not done
     def push_button(self):
         self.start_instances()
         self.prepare_machine_environments()
         # self.mail_to_list()
 
 
-# def main_debugging():
-#     API = AWS_API()
-#     print(API.get_user_info())
-#
-#     API.terminate_instances()
-#     API.start_instances(count=1, instance_type='t3a.xlarge')
-#     time.sleep(10)  # TODO: Might not need this
-#     API.get_instance_info()
-#     #API.prepare_machine_environments('test')
-
 def main():
     """Main script for running startup of AWS instances."""
     API = AWSHandler()
+    # API.generate_keypair()
     #API.mail_to_list()
     #API = AWSHandler()  # Instantiate class object
-    API.terminate_instances()
-    API.start_instances(count=65, instance_type='t3a.xlarge')
-    time.sleep(120)
-    API.prepare_machine_environments('pantalones')
-    print("DONE")
+    # API.terminate_instances()
+    # API.start_instances(count=65, instance_type='t3a.xlarge')
+    # API.prepare_machine_environments('pantalones')
+    # API.get_available_ip_addresses()
+    API.mail_to_list()
     # API.terminate_instances()
     #
     # API.start_instances(count=2, instance_type='m5a.large')
