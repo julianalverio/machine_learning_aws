@@ -27,7 +27,6 @@ Assumptions about the current working directory:
     manually provide any credentials to push.
 """
 
-
 class AWSHandler():
     """Main object for starting and stopping instances, creating new
     instances, retrieving instance and user information, and sending emails
@@ -140,6 +139,29 @@ class AWSHandler():
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
 
 
+    def restart_instances(self, count=None, instance_type='t3a.xlarge'):
+        if not count:
+            count = len(self.user_info)
+        ec2 = boto3.resource('ec2', region_name="us-east-1")
+        print("AMI is: {}, instance type is: {}".format(ami, instance_type))
+        instances = self.get_instances()
+        # Now iterate through instances
+        instance_ids = []
+        for instance in instances:
+            instance_ids.append(instance.instance_id)
+        # Now restart all instances at once
+        try:
+            ec2.reboot_instances(InstanceIds=instance_ids, DryRun=True)
+        except ClientError as e:
+            if 'DryRunOperation' not in str(e):
+                print("You don't have permission to reboot instances.")
+                raise
+
+
+        print("AMI is {}".format(ami))
+        self.wait_for_instances(['running', 'terminated', 'shutting-down'])
+
+    # returns a list of [instance_id, instance_type, ip_address, current_state] lists.
     def get_instance_info(self):
         """Function for retrieving instance-related information.
 
@@ -206,6 +228,19 @@ class AWSHandler():
             except:
                 print("Unable to terminate instance %s" % instance)
         self.wait_for_instances(['terminated'])
+    
+    # Stop all the instances
+    def hibernate_instances(self):
+        """Function for stopping all active instances at the end of a work
+        session"""
+        instances = self.get_instances()
+        for instance in instances:
+            try:
+                instance.terminate()
+            except:
+                print("Unable to hibernate instance %s" % instance)
+        self.wait_for_instances(['stopping', 'stopped', 'terminated'])
+
 
     # Stop all the instances
     def hibernate_instances(self):
@@ -463,13 +498,15 @@ class AWSHandler():
             scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ' \
                           'ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (
             credential_path, local_source, host, remote_destination)
-            os.system(scp_command)
+            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (credential_path, local_source, host, remote_destination)
+
 
     def full_start(self, email=True):
         self.terminate_instances()
         self.start_instances(count=65, instance_type='t3a.xlarge')
         time.sleep(120)
         self.prepare_machine_environments('pantalones')
+
 
 
 def main():
