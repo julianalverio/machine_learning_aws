@@ -54,7 +54,7 @@ class AWSHandler():
         print("Keypair written")
 
     def start_instances(self, count=None, instance_type='t3a.xlarge',
-                        ami_type="ubuntu"):
+                        ami_type="ubuntu", custom=False):
         """Function for starting new EC2 instances from scratch.  This
         function creates n instances, waits for them to be 'running',
         and writes down the ip addresses in hosts.txt.
@@ -62,12 +62,16 @@ class AWSHandler():
 
         if not count:
             count = len(self.user_info)
+        print("Count is {}".format(count))
 
         # Choose AMI - by default this is Ubuntu
-        if ami_type == "ubuntu":
-            ami = 'ami-00a208c7cdba991ea'  # ubuntu
-        elif ami_type == "linux":
-            ami = 'ami-00068cd7555f543d5'  # linux
+        if custom:  # If we want to use a custom AMI
+            ami = "CUSTOM EXTENSION"
+        else:  # Use a specific AMI
+            if ami_type == "ubuntu":
+                ami = 'ami-00a208c7cdba991ea'  # ubuntu
+            elif ami_type == "linux":
+                ami = 'ami-00068cd7555f543d5'  # linux
 
         # Create EC2 object
         ec2 = boto3.resource('ec2', region_name="us-east-1")
@@ -344,17 +348,20 @@ class AWSHandler():
         credential_path = os.path.join(here, 'ec2-keypair.pem')
 
         # Iterate through hosts and create commands for configuring computers
+        print("INSTANCE INFO: {}".format(self.get_instance_info()))
+        index = 0
         for _, _, host, _ in self.get_instance_info():
+            print("Iterated through {} hosts".format(index))
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
                             '--pwd %s' % (password)
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
             ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s ' \
-                          '%s' % (
-                              credential_path, host, clone_command)
+                          '%s' % (credential_path, host, clone_command)
             os.system(ssh_command)
+            index += 1
 
-    def mail_to_list(self, MSG_TYPE="restart"):
+    def mail_to_list(self, MSG_TYPE="both"):
         """Class method for writing to a set of emails determined by email
         information from users.csv.
 
@@ -388,7 +395,7 @@ class AWSHandler():
             msg = MIMEMultipart()
             msg['From'] = fromaddr
             msg['To'] = toaddr
-            msg['Subject'] = "Updated AWS Login Information"
+            msg['Subject'] = "FIXED Updated AWS Login Information"
 
             # Text body of message
             if MSG_TYPE == "full":
@@ -411,17 +418,13 @@ class AWSHandler():
 
 
                     Make sure you paste this command below in ONE line:
-                    sudo /home/ubuntu/conda/bin/conda env create -f 
-                    /home/ubuntu/machine_learning_aws/environment.yml -n 
-                    conda_env
+                    sudo /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
 
                     conda init bash
 
                     conda activate conda_env
 
-                    jupyter notebook --port=8888 --no-browser --ip='*' 
-                    --NotebookApp.token='' --NotebookApp.password='' 
-                    /home/ubuntu/machine_learning_aws/daily_user
+                    jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
 
 
                     Paste this command:
@@ -459,24 +462,21 @@ class AWSHandler():
 
                     1. Connect to your machine:
                     ssh -o "StrictHostKeyChecking no" ubuntu@%s
-
-
-                    2. Next, we want to initialize our conda environment:
-                    conda activate conda_env
-
-
-                    3. Now, we want to install tmux in case we lose connection:
+                    
+                    2. Now, we want to install tmux in case we lose connection:
                     sudo apt-get install tmux
 
 
-                    4. Now we want to start a tmux session:
+                    3. Now we want to start a tmux session:
                     tmux
 
 
+                    4. Next, we want to initialize our conda environment:
+                    conda activate conda_env
+
+
                     5. Next, open a Jupyter notebook:
-                    jupyter notebook --port=8888 --no-browser --ip='*' 
-                    --NotebookApp.token='' --NotebookApp.password='' 
-                    /home/ubuntu/machine_learning_aws/daily_user
+                    jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
 
 
                     6. Next, detach from your tmux session:
@@ -498,6 +498,111 @@ class AWSHandler():
                     GSL Uruguay Technical Team
                     """ % (name_of_user, ip_address, ip_address)
 
+            elif MSG_TYPE == "both":
+                body = """\
+                    Hola User,
+
+                    Below is your login information for this 
+                    course.  
+
+                    Mac users and users running Linux: Please
+                    copy and paste the following commands into 
+                    your command line.
+
+                    Windows users: paste the following commands
+                    into Git Bash
+
+                    PASSWORD: pantalones
+                    
+                    IF YOU DID NOT RECEIVE AN EMAIL FROM US EARLIER, DO THIS:
+                    
+                    1. Connect to your machine:
+                    ssh -o "StrictHostKeyChecking no" ubuntu@%s
+                    
+                    
+                    2. Now, we want to install tmux in case we lose connection:
+                    sudo apt-get install tmux
+
+
+                    3. Now we want to start a tmux session:
+                    tmux
+                    
+                    
+                    4. Now we source our bash:
+                    source ~/.bashrc​
+                    
+                    
+                    5. Now we want to re-install our Anaconda environment:
+                    sudo /home/ubuntu/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+
+
+                    6. Next, we want to initialize our conda environment:
+                    conda activate conda_env
+
+
+                    7. Next, open a Jupyter notebook:
+                    jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
+
+
+                    8. Next, detach from your tmux session:
+                    PRESS (1) ctrl + b (same time), 
+                     then (2) d (after) on your keyboard
+
+
+                    9. (ON YOUR LOCAL MACHINE IN A NEW TERMINAL) Use ssh port forwarding:
+                    ssh -NfL 5005:localhost:8888 ubuntu@%s
+
+
+                    10. Finally, go to your web browser (such as Chrome) and type:
+                    localhost:5005
+                    
+                    IF YOU DID RECEIVE AN EMAIL FROM US EARLIER, DO THIS:
+                    1. Connect to your machine:
+                    ssh -o "StrictHostKeyChecking no" ubuntu@%s
+                    
+                    2. Now, we want to install tmux in case we lose connection:
+                    sudo apt-get install tmux
+
+
+                    3. Now we want to start a tmux session:
+                    tmux
+
+
+                    4. Next, we want to initialize our conda environment:
+                    conda activate conda_env
+
+
+                    5. Next, open a Jupyter notebook:
+                    jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
+
+
+                    6. Next, detach from your tmux session:
+                    PRESS (1) ctrl + b (same time), 
+                     then (2) d (after) on your keyboard
+
+
+                    7. (ON YOUR LOCAL MACHINE IN A NEW TERMINAL) Use ssh port forwarding:
+                    ssh -NfL 5005:localhost:8888 ubuntu@%s
+
+
+                    8. Finally, go to your web browser (such as Chrome) and type:
+                    localhost:5005
+
+
+                    This will take you to your AWS Jupyter notebooks!
+
+                    Mucho amor,
+                    GSL Uruguay Technical Team
+                    
+
+
+                    This will take you to your AWS Jupyter notebooks!
+
+                    Mucho amor,
+                    GSL Uruguay Technical Team
+                    """ % (ip_address, ip_address, ip_address, ip_address)
+
+/
             # Prepare email to server information
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -624,21 +729,33 @@ class AWSHandler():
 
 def main():
     """Main script for running AWS API commands."""
+
+    # Flags for different commands
     EMAIL = False
     FULL_START = False
+    FULL_CUSTOM_START = False
     ROLLING_START = False
     SAVE_INSTANCE_IDs = False
     HIBERNATE = False
     TERMINATE = False
+    DEBUGGING = False
+    SETTING_UP_AMI = True
+
+    # Password for configuring machine environments
+    PSWD = 'pantalones'
 
     # Instantiate class instance
     API = AWSHandler()
 
     # Based off of boolean flags, run specific commands for AWS
-    if FULL_START:
+    if FULL_CUSTOM_START:
+        # TODO: Complete
         API.start_instances(count=65, instance_type='t3a.xlarge')
+    elif FULL_START:
+        API.start_instances(count=65, instance_type='t3a.xlarge')
+        API.prepare_machine_environments(PSWD)
     elif ROLLING_START:
-        API.start_instances()
+        API.restart_instances()
 
     # Stop instances/terminate
     if HIBERNATE:
@@ -653,6 +770,16 @@ def main():
     # Choose whether or not to save active instance IDs
     if SAVE_INSTANCE_IDs:
         API.save_instance_ids()
+
+    # Debugging
+    if DEBUGGING:
+        print(API.get_user_info())
+        print(API.get_instance_info())
+
+    # Create a single instance for modification
+    if SETTING_UP_AMI:
+        #API.start_instances(count=1, instance_type='t3a.xlarge')
+        API.prepare_machine_environments(PSWD)
 
 
 if __name__ == "__main__":
