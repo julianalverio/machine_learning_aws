@@ -11,7 +11,7 @@ hosts.txt
 *.h5
 *.hdf5
 *.h*
-*instance_ids.txt
+*instance_IDs.txt
 
 
 # pycharm

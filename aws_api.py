@@ -222,7 +222,7 @@ class AWSHandler():
         """Class method for terminating all active EC2 instances.
         """
 
-        # Get instances and iterate through them
+        # Get instances and iteratively terminate them
         instances = self.get_instances()
         for instance in instances:
             try:
@@ -243,11 +243,11 @@ class AWSHandler():
         storage costs.
         """
 
-        # Get instances and iterate through them
+        # Get instances and iteratively stop them
         instances = self.get_instances()
         for instance in instances:
             try:
-                instance.terminate()
+                instance.stop()
             except:
                 print("Unable to hibernate instance %s" % instance)
 
@@ -354,7 +354,7 @@ class AWSHandler():
                               credential_path, host, clone_command)
             os.system(ssh_command)
 
-    def mail_to_list(self):
+    def mail_to_list(self, MSG_TYPE="restart"):
         """Class method for writing to a set of emails determined by email
         information from users.csv.
 
@@ -388,56 +388,115 @@ class AWSHandler():
             msg = MIMEMultipart()
             msg['From'] = fromaddr
             msg['To'] = toaddr
-            msg['Subject'] = "Daily Log In Instructions"
+            msg['Subject'] = "Updated AWS Login Information"
 
             # Text body of message
-            body = """\
-            
-            Hola %s,
-            
-            Below is your login information for this course.  
-            Mac users and users running Linux: Please
-            copy and paste the following command into your command line.
-            Windows users: paste the following command into Git Bash
+            if MSG_TYPE == "full":
+                body = """\
 
-            
-            Next, copy and paste this command:
-            ssh -o "StrictHostKeyChecking no" ubuntu@%s
-            
-            Next, copy and paste these commands one at a time.
-            
-            source ~/.bashrc
-            
-            
-            Make sure you paste this command below in ONE line:
-            sudo /home/ubuntu/conda/bin/conda env create -f 
-            /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
-            
-            conda init bash
-            
-            conda activate conda_env
-            
-            jupyter notebook --port=8888 --no-browser --ip='*' 
-            --NotebookApp.token='' --NotebookApp.password='' 
-            /home/ubuntu/machine_learning_aws/daily_user
-            
-            
-            Paste this command:
-            ssh -NfL 5005:localhost:8888 ubuntu@%s
-            
-            
-            Finally, your web browser and type:
-            localhost:5005
-            
-            
-            This will take you to the Jupyter notebooks on AWS that we will 
-            be using for the rest of this course!  
-            
-            Mucho amor,
-            GSL Uruguay Technical Team
-            """ % (name_of_user, ip_address, ip_address)
+                    Hola %s,
 
-            body = 'We are testing some things, please ignore this :) '
+                    Below is your login information for this course.  
+                    Mac users and users running Linux: Please
+                    copy and paste the following command into your command line.
+                    Windows users: paste the following command into Git Bash
+
+
+                    Next, copy and paste this command:
+                    ssh -o "StrictHostKeyChecking no" ubuntu@%s
+
+                    Next, copy and paste these commands one at a time.
+
+                    source ~/.bashrc
+
+
+                    Make sure you paste this command below in ONE line:
+                    sudo /home/ubuntu/conda/bin/conda env create -f 
+                    /home/ubuntu/machine_learning_aws/environment.yml -n 
+                    conda_env
+
+                    conda init bash
+
+                    conda activate conda_env
+
+                    jupyter notebook --port=8888 --no-browser --ip='*' 
+                    --NotebookApp.token='' --NotebookApp.password='' 
+                    /home/ubuntu/machine_learning_aws/daily_user
+
+
+                    Paste this command:
+                    ssh -NfL 5005:localhost:8888 ubuntu@%s
+
+
+                    Finally, your web browser and type:
+                    localhost:5005
+
+
+                    This will take you to the Jupyter notebooks on AWS that 
+                    we will 
+                    be using for the rest of this course!  
+
+                    Mucho amor,
+                    GSL Uruguay Technical Team
+                    """ % (name_of_user, ip_address, ip_address)
+
+            elif MSG_TYPE == "restart":
+                body = """\
+
+                    Hola %s,
+
+                    Below is your login information for this 
+                    course.  
+
+                    Mac users and users running Linux: Please
+                    copy and paste the following commands into 
+                    your command line.
+
+                    Windows users: paste the following commands
+                    into Git Bash
+
+                    PASSWORD: pantalones
+
+                    1. Connect to your machine:
+                    ssh -o "StrictHostKeyChecking no" ubuntu@%s
+
+
+                    2. Next, we want to initialize our conda environment:
+                    conda activate conda_env
+
+
+                    3. Now, we want to install tmux in case we lose connection:
+                    sudo apt-get install tmux
+
+
+                    4. Now we want to start a tmux session:
+                    tmux
+
+
+                    5. Next, open a Jupyter notebook:
+                    jupyter notebook --port=8888 --no-browser --ip='*' 
+                    --NotebookApp.token='' --NotebookApp.password='' 
+                    /home/ubuntu/machine_learning_aws/daily_user
+
+
+                    6. Next, detach from your tmux session:
+                    PRESS (1) ctrl + b (same time), 
+                     then (2) d (after) on your keyboard
+
+
+                    7. (ON YOUR LOCAL MACHINE IN A NEW TERMINAL) Use ssh port forwarding:
+                    ssh -NfL 5005:localhost:8888 ubuntu@%s
+
+
+                    8. Finally, go to your web browser (such as Chrome) and type:
+                    localhost:5005
+
+
+                    This will take you to your AWS Jupyter notebooks!
+
+                    Mucho amor,
+                    GSL Uruguay Technical Team
+                    """ % (name_of_user, ip_address, ip_address)
 
             # Prepare email to server information
             msg.attach(MIMEText(body, 'plain'))
@@ -568,7 +627,9 @@ def main():
     EMAIL = False
     FULL_START = False
     ROLLING_START = False
-    SAVE_INSTANCE_IDs = True
+    SAVE_INSTANCE_IDs = False
+    HIBERNATE = False
+    TERMINATE = False
 
     # Instantiate class instance
     API = AWSHandler()
@@ -578,6 +639,12 @@ def main():
         API.start_instances(count=65, instance_type='t3a.xlarge')
     elif ROLLING_START:
         API.start_instances()
+
+    # Stop instances/terminate
+    if HIBERNATE:
+        API.hibernate_instances()
+    elif TERMINATE:
+        API.terminate_instances()
 
     # Choose whether we email to class
     if EMAIL:
