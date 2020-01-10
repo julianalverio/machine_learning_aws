@@ -328,8 +328,8 @@ def main():
     # API.terminate_instances()
     # API.start_instances(count=65, instance_type='t3a.xlarge')
     # API.prepare_machine_environments('pantalones')
-    # API.get_available_ip_addresses()
-    API.mail_to_list()
+    API.get_available_ip_addresses()
+    # API.mail_to_list()
     # API.terminate_instances()
     #
     # API.start_instances(count=2, instance_type='m5a.large')
