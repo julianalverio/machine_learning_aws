@@ -10,7 +10,7 @@ pip install h5py
 conda install keras-gpu
 '''
 
-
+# Test in the remote repository to ensure packages are installed correctly
 from ggplot import *
 from itertools import product
 from joblib import Parallel, delayed

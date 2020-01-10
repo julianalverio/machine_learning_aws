@@ -1,4 +1,4 @@
-# AWS
+#AWS and Class Info
 credentials.csv
 email_credentials.txt
 *.pem
@@ -11,7 +11,7 @@ hosts.txt
 *.h5
 *.hdf5
 *.h*
-*instance_IDs.txt
+*instance_ids.txt
 
 
 # pycharm
@@ -20,3 +20,4 @@ hosts.txt
 
 # Jupyter
 *checkpoint*
+
