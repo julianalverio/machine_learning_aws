@@ -362,6 +362,7 @@ class AWSHandler():
         broken_emails = list()
         ip_address_to_useremail_user = dict()
         num_users = len(self.user_info)
+        # import pdb; pdb.set_trace()
         for idx, ((uid, username, name_of_user, email),
                   (_, _, ip_address, _)) in enumerate(
                 zip(self.user_info, instance_info)):
@@ -421,15 +422,17 @@ class AWSHandler():
 
             body = 'We are testing some things, please ignore this :) '
 
-            msg.attach(MIMEText(body, 'plain'))
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(fromaddr, "support_vector_machine")
-            text = msg.as_string()
-            server.sendmail(fromaddr, toaddr, text)
-            server.quit()
+            # msg.attach(MIMEText(body, 'plain'))
+            # server = smtplib.SMTP('smtp.gmail.com', 587)
+            # server.ehlo()
+            # server.starttls()
+            # server.ehlo()
+            # server.login(fromaddr, "support_vector_machine")
+            # text = msg.as_string()
+            # server.sendmail(fromaddr, toaddr, text)
+            # server.quit()
+
+            print('Fake emailing %s' % email)
 
         print('This is the information for the broken email addresses')
         print(broken_emails)
@@ -518,13 +521,14 @@ def main():
 
     # Instantiate class instance
     API = AWSHandler()
+    # API.mail_to_list()
     # API.generate_keypair()
     #API.mail_to_list()
     #API = AWSHandler()  # Instantiate class object
     # API.terminate_instances()
-    # API.start_instances(count=65, instance_type='t3a.xlarge')
+    # API.start_instances(count=15, instance_type='t3a.xlarge')
     # API.prepare_machine_environments('pantalones')
-    API.get_available_ip_addresses()
+    # API.get_available_ip_addresses()
     # API.mail_to_list()
     # API.terminate_instances()
     #
@@ -535,20 +539,22 @@ def main():
 if __name__=="__main__":
     main()
 
-    # Based off of boolean flags, run specific commands for AWS
-    if FULL_START:
-        API.start_instances(count=65, instance_type='t3a.xlarge')
-    elif ROLLING_START:
-        API.start_instances()
-
-    # Choose whether we email to class
-    if EMAIL:
-        API.mail_to_list()
-
-    # Choose whether or not to save active instance IDs
-    if SAVE_INSTANCE_IDs:
-        API.save_instance_ids()
 
 
-if __name__ == "__main__":
-    main()
+    # # Based off of boolean flags, run specific commands for AWS
+    # if FULL_START:
+    #     API.start_instances(count=65, instance_type='t3a.xlarge')
+    # elif ROLLING_START:
+    #     API.start_instances()
+    #
+    # # Choose whether we email to class
+    # if EMAIL:
+    #     API.mail_to_list()
+    #
+    # # Choose whether or not to save active instance IDs
+    # if SAVE_INSTANCE_IDs:
+    #     API.save_instance_ids()
+
+#
+# if __name__ == "__main__":
+#     main()
