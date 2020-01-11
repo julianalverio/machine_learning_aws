@@ -1,5 +1,5 @@
 # Give write permissions for Jupyter notebook
-sudo chmod -R 777 /home/ubunut/machine_learning_aws/template/
+sudo chmod -R 777 /home/ubuntu/machine_learning_aws/template/
 
 # Start tmux session
 tmux
