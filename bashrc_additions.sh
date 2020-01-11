@@ -1,5 +1,12 @@
-# Executable code for automatically starting tmux/Jupyter
+# Give write permissions for Jupyter notebook
+sudo chmod -R 777 /home/ubunut/machine_learning_aws/template/
 
-# Start screen session with Jupyter command, and detach
-screen -d -m conda activate jupyter_setup.sh
+# Start tmux session
+tmux
+
+# Next activate conda environment
+conda activate conda_env
+
+# Now start Jupyter notebook at port 8888
+jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user
 
