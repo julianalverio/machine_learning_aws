@@ -703,7 +703,6 @@ class AWSHandler():
 
         # Get instance information
         instance_info = self.get_instance_info()
-        ip_addresses = [ip_address for _, _, ip_address, _ in instance_info]
 
         # Initialize output objects
         ip_address_to_useremail_user = dict()
@@ -712,7 +711,7 @@ class AWSHandler():
         # Iterate through users, user names
         for idx, ((uid, username, name_of_user, email),
                   (_, _, ip_address, _)) in enumerate(
-            zip(self.user_info, instance_info)):
+                    zip(self.user_info, instance_info)):
             # Add (key, value) pair to mapping
             ip_address_to_useremail_user[ip_address] = [email, username]
             useremail_user_to_ip_address[(email, username)] = ip_address
@@ -814,7 +813,7 @@ class AWSHandler():
             os.system('git commit -m "push for %s"' % host)
             os.system('git push')
 
-    def full_start(self, email=True, num_machines=65):
+    def full_start(self, email=True, num_machines=65, sleep_interval=120):
         """Wrapper function for running start-up of all machines from a
         non-custom AMI.  """
 
@@ -825,7 +824,7 @@ class AWSHandler():
         self.start_instances(count=num_machines, instance_type='t3a.xlarge')
 
         # Wait until all are fully initialized before preparing envs
-        time.sleep(120)
+        time.sleep(sleep_interval)
 
         # Setup and configure instance environments iteratively
         self.prepare_machine_environments('pantalones')
@@ -853,13 +852,16 @@ def main():
     # Password for configuring machine environments
     PSWD = 'pantalones'
 
+    # Interval for how long to sleep between creating and configuring instances
+    SLEEP_INTERVAL = 120  # Seconds
+
     # Instantiate class instance
     API = AWSHandler()
 
     # Based off of boolean flags, run specific commands for AWS
     if FULL_START:
-        API.start_instances(count=65, instance_type='t3a.xlarge')
-        API.prepare_machine_environments(PSWD)
+        API.full_start(email=EMAIL, num_machines=65,
+                       sleep_interval=SLEEP_INTERVAL)
     elif ROLLING_START:
         API.restart_instances()
 
@@ -887,14 +889,14 @@ def main():
     # Create a single instance for modification
     if SETTING_UP_AMI:
         API.start_instances(count=1, instance_type='t3a.xlarge')
-        time.sleep(30)
+        time.sleep(SLEEP_INTERVAL)
         API.prepare_machine_environments(PSWD, custom_ami="no")
 
     # Create instances from a custom AMI
     if CUSTOM_AMI_START:
         API.start_instances(count=1, instance_type='t3a.xlarge',
                             custom_ami_name="ami-09f01c0e0942ad784")
-        time.sleep(30)
+        time.sleep(SLEEP_INTERVAL)
         API.prepare_machine_environments(PSWD, custom_ami="yes")
 
 
