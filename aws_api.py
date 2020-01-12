@@ -360,7 +360,7 @@ class AWSHandler():
 
             # Commands used for ssh login
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
-                            '--pwd %s --custom_ami %s' % (password, custom_ami)
+                            '--pwd %s --custom_ami %s' % (password, False)
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
 
