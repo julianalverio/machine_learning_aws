@@ -43,14 +43,14 @@ def replaceAll(file, searchExp, replaceExp):
         sys.stdout.write(line)
 
 
-def run_setup(password, custom_ami=False):
+def run_setup(password, custom_ami="no"):
     """Function that is called inside each remote AWS EC2 instance. Note the
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
 
     print("CUSTOM AMI IS: {}".format(custom_ami))
     # Only do the following if setting up instance from scratch
-    if not custom_ami:
+    if custom_ami == "no":
         # Create a .txt file for passwords
         print("CREATING TEXT FILE FOR PASSWORD")
         create_password_text_file(password)
@@ -104,7 +104,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pwd', type=str, help="String password used for ssh "
                                                 "login into instance")
-    parser.add_argument('--custom_ami', type=bool, help="Boolean flag for "
+    parser.add_argument('--custom_ami', type=str, help="yes/no flag for "
                                                 "whether or not we use a custom"
                                                 "AMI. If you do not know what "
                                                  "this means, you should "

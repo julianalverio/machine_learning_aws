@@ -330,7 +330,7 @@ class AWSHandler():
         groups.append(group[:-1])
         return groups
 
-    def prepare_machine_environments(self, password, custom_ami=False):
+    def prepare_machine_environments(self, password, custom_ami="no"):
         """Function for setting up our active instances.  Once you've run
         start_instances():
 
@@ -360,12 +360,13 @@ class AWSHandler():
 
             # Commands used for ssh login
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
-                            '--pwd %s --custom_ami %s' % (password, False)
+                            '--pwd %s --custom_ami %s' % (password, custom_ami)
+            print(setup_command)
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
 
             # Only need to do setup, not clone
-            if custom_ami:
+            if custom_ami == "yes":
                 ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
                               'ubuntu@%s %s' % (credential_path, host, setup_command)
 
@@ -837,14 +838,14 @@ def main():
     if SETTING_UP_AMI:
         #API.start_instances(count=1, instance_type='t3a.xlarge')
         #time.sleep(30)
-        API.prepare_machine_environments(PSWD, custom_ami=False)
+        API.prepare_machine_environments(PSWD, custom_ami="no")
 
     # Create instances from a custom AMI
     if CUSTOM_AMI_START:
         API.start_instances(count=1, instance_type='t3a.xlarge',
                             custom_ami_name="ami-09f01c0e0942ad784")
         time.sleep(30)
-        API.prepare_machine_environments(PSWD, custom_ami=True)
+        API.prepare_machine_environments(PSWD, custom_ami="yes")
 
 
 if __name__ == "__main__":
