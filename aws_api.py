@@ -853,7 +853,7 @@ def main():
     API = AWSHandler()
 
     # Based off of boolean flags, run specific commands for AWS
-    elif FULL_START:
+    if FULL_START:
         API.start_instances(count=65, instance_type='t3a.xlarge')
         API.prepare_machine_environments(PSWD)
     elif ROLLING_START:
