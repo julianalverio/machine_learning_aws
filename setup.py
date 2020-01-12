@@ -43,38 +43,40 @@ def replaceAll(file, searchExp, replaceExp):
         sys.stdout.write(line)
 
 
-def run_setup(password):
+def run_setup(password, custom_ami=False):
     """Function that is called inside each remote AWS EC2 instance. Note the
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
 
-    # Create a .txt file for passwords
-    create_password_text_file(password)
-    os.chdir('/home/ubuntu/machine_learning_aws')
+    # Only do the following if setting up instance from scratch
+    if not custom_ami:
+        # Create a .txt file for passwords
+        create_password_text_file(password)
+        os.chdir('/home/ubuntu/machine_learning_aws')
 
-    # Anaconda installation
-    print('I AM INSTALLING CONDA')
-    os.system(
-        'sudo sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux'
-        '-x86_64.sh -p /home/ubuntu/conda -b')
+        # Anaconda installation
+        print('I AM INSTALLING CONDA')
+        os.system(
+            'sudo sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux'
+            '-x86_64.sh -p /home/ubuntu/conda -b')
 
-    # Swap the condarc
-    print('SWAPPING CONDARC')
-    os.system(
-        'cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
+        # Swap the condarc
+        print('SWAPPING CONDARC')
+        os.system(
+            'cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
 
-    # Set up daily user files that can later be retrieved for saving work
-    print('SETTING UP DAILY USER FILES')
-    os.system(
-        'cp -r /home/ubuntu/machine_learning_aws/template '
-        '/home/ubuntu/machine_learning_aws/daily_user')
-    os.chdir('/home/ubuntu')
+        # Set up daily user files that can later be retrieved for saving work
+        print('SETTING UP DAILY USER FILES')
+        os.system(
+            'cp -r /home/ubuntu/machine_learning_aws/template '
+            '/home/ubuntu/machine_learning_aws/daily_user')
+        os.chdir('/home/ubuntu')
 
-    # Initializing conda
-    print('DOING CONDA INIT')
-    os.chdir('/home/ubuntu/')
-    os.system('./conda/bin/conda init')
-    os.system('./conda/bin/conda init bash')
+        # Initializing conda
+        print('DOING CONDA INIT')
+        os.chdir('/home/ubuntu/')
+        os.system('./conda/bin/conda init')
+        os.system('./conda/bin/conda init bash')
 
     # Changing ubuntu password (to common password for entire class)
     print('CHANGING UBUNTU PASSWORD')
@@ -92,19 +94,24 @@ def run_setup(password):
     # Notify us when finished
     print('I finished the setup python script!')
 
-
 def main():
     """Main Python function for this script.
     """
 
     # Create an argument parser.  Commands iteratively come from aws_api.py
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pwd', type=str)
+    parser.add_argument('--pwd', type=str, help="String password used for ssh "
+                                                "login into instance")
+    parser.add_argument('--custom_ami', type=bool, help="Boolean flag for "
+                                                "whether or not we use a custom"
+                                                "AMI. If you do not know what "
+                                                 "this means, you should "
+                                                 "probably set equal to False.")
     args = parser.parse_args()
 
-    # Run setup command for installing MiniConda in remote EC2 instances
-    run_setup(args.pwd)
-
+    # Run setup command for instance - note this depends on AMI we use
+    run_setup(args.pwd, custom_ami=args.custom_ami)
 
 if __name__ == '__main__':
     main()
+

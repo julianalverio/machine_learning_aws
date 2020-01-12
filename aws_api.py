@@ -54,7 +54,7 @@ class AWSHandler():
         print("Keypair written")
 
     def start_instances(self, count=None, instance_type='t3a.xlarge',
-                        ami_type="ubuntu", custom=False):
+                        ami_type="ubuntu", custom_ami_name=None):
         """Function for starting new EC2 instances from scratch.  This
         function creates n instances, waits for them to be 'running',
         and writes down the ip addresses in hosts.txt.
@@ -65,8 +65,8 @@ class AWSHandler():
         print("Count is {}".format(count))
 
         # Choose AMI - by default this is Ubuntu
-        if custom:  # If we want to use a custom AMI
-            ami = "CUSTOM EXTENSION"
+        if custom_ami_name is not None:  # If we want to use a custom AMI
+            ami = custom_ami_name
         else:  # Use a specific AMI
             if ami_type == "ubuntu":
                 ami = 'ami-00a208c7cdba991ea'  # ubuntu
@@ -330,7 +330,7 @@ class AWSHandler():
         groups.append(group[:-1])
         return groups
 
-    def prepare_machine_environments(self, password):
+    def prepare_machine_environments(self, password, custom_ami=False):
         """Function for setting up our active instances.  Once you've run
         start_instances():
 
@@ -349,16 +349,34 @@ class AWSHandler():
 
         # Iterate through hosts and create commands for configuring computers
         print("INSTANCE INFO: {}".format(self.get_instance_info()))
+
+        # Iterate through hosts for setup
         index = 0
         for _, _, host, _ in self.get_instance_info():
+
+            # For progress display only
             print("Iterated through {} hosts".format(index))
+
+            # Commands used for ssh login
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
-                            '--pwd %s' % (password)
+                            '--pwd %s --custom_ami %s' % (password, custom_ami)
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
-            ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ubuntu@%s ' \
-                          '%s' % (credential_path, host, clone_command)
+
+            # Only need to do setup, not clone
+            if custom_ami:
+                ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
+                              'ubuntu@%s %s' % (credential_path, host, setup_command)
+
+            # If creating from scratch, run setup + clone repository
+            else:
+                ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
+                              'ubuntu@%s %s' % (credential_path, host, clone_command)
+
+            # ssh login and run relevant command
             os.system(ssh_command)
+
+            # Increment counter and repeat
             index += 1
 
     def mail_to_list(self, MSG_TYPE="both"):
@@ -602,7 +620,49 @@ class AWSHandler():
                     GSL Uruguay Technical Team
                     """ % (ip_address, ip_address, ip_address, ip_address)
 
-/
+            elif MSG_TYPE == "custom_ami":
+                body = """\
+                   Hola %s,
+
+                   Below is your login information for this 
+                   course.  
+
+                   Mac users and users running Linux: Please
+                   copy and paste the following commands into 
+                   your command line.
+
+                   Windows users: paste the following commands
+                   into Git Bash.
+
+                   PASSWORD: pantalones
+
+                   1. Connect to your machine:
+                   ssh -o "StrictHostKeyChecking no" ubuntu@%s
+
+
+                   2. Next, detach from your auto-generated tmux session:
+                   PRESS (1) ctrl + b (same time), 
+                    then (2) d (after) on your keyboard
+
+                   Note that this automatically starts a Jupyter notebook on port 8889.  You can close this other notebook if you would like, but it is not necessary for you to.
+
+                   
+                   3. (ON YOUR LOCAL MACHINE IN A NEW 
+                   TERMINAL) Use ssh port forwarding:
+                   ssh -NfL 5005:localhost:8888 ubuntu@%s
+
+
+                   4. Finally, go to your web browser (such 
+                   as Chrome) and type:
+                   localhost:5005
+
+                   This will take you to your AWS Jupyter 
+                   notebooks!
+
+                   Mucho amor,
+                   GSL Uruguay Technical Team
+                   """ % (name_of_user, ip_address, ip_address)
+
             # Prepare email to server information
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -681,50 +741,42 @@ class AWSHandler():
 
         # Iterate through hosts at different IP addresses
         for host in live_addresses:
+
+            # Make host directory according to IP address
             host_save_dir = os.path.join(root_save_dir, host)
+
+            # File transfer command
             scp_command = 'scp -i %s -o "StrictHostKeyChecking no" ' \
-                          'ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (
+                          'ubuntu@%s:/home/ubuntu/machine_learning_aws' \
+                          '/daily_user/  %s' % (
                               credential_path, host, host_save_dir)
+
+            # Transfer files, change directory, then add changes to git repo
             os.system(scp_command)
             os.chdir(host_save_dir)
             os.system('git add .')
             os.system('git commit -m "push for %s"' % host)
             os.system('git push')
 
-    # TODO: can we wget this from dropbox or Google Drive or something? + TEST
-    def transfer_data(self):
-        """Class method for transfering data from the AWS machines to the
-        local machine where this command is being run from or the remote
-        GitHub repository.
-        """
+    def full_start(self, email=True, num_machines=65):
+        """Wrapper function for running start-up of all machines from a
+        non-custom AMI.  """
 
-        # Set remote destination to be the "daily_user/" sub-directory
-        remote_destination = '/home/ubuntu/machine_learning_aws/daily_user/'
-        local_source = os.path.join(os.getcwd(), 'PLACEHOLD')  # TODO: edit this
-        credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
-
-        # Iterate through active EC2 IP addresses
-        live_addresses = list()
-        for _, _, ip_address, state in self.get_instance_info():
-            if state == 'running':
-                live_addresses.append(ip_address)
-
-        # Iterate through host names at different IP addresses
-        for host in live_addresses:
-            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ' \
-                          'ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (
-                              credential_path, local_source, host,
-                              remote_destination)
-            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" %s ' \
-                          'ubuntu@%s:/home/ubuntu/machine_learning_aws/  %s' % (
-                              credential_path, local_source, host,
-                              remote_destination)
-
-    def full_start(self, email=True):
+        # Terminate any running instances
         self.terminate_instances()
-        self.start_instances(count=65, instance_type='t3a.xlarge')
+
+        # Start new instances
+        self.start_instances(count=num_machines, instance_type='t3a.xlarge')
+
+        # Wait until all are fully initialized before preparing envs
         time.sleep(120)
+
+        # Setup and configure instance environments iteratively
         self.prepare_machine_environments('pantalones')
+
+        # Email if designated to
+        if email:
+            self.mail_to_list()
 
 
 def main():
@@ -732,7 +784,9 @@ def main():
 
     # Flags for different commands
     EMAIL = False
+    EMAIL_CUSTOM = False
     FULL_START = False
+    CUSTOM_AMI_START = False
     FULL_CUSTOM_START = False
     ROLLING_START = False
     SAVE_INSTANCE_IDs = False
@@ -766,6 +820,8 @@ def main():
     # Choose whether we email to class
     if EMAIL:
         API.mail_to_list()
+    elif EMAIL_CUSTOM:  # USE THIS IF USING CUSTOM AMIs
+        API.mail_to_list(MSG_TYPE="custom_ami")
 
     # Choose whether or not to save active instance IDs
     if SAVE_INSTANCE_IDs:
@@ -778,8 +834,15 @@ def main():
 
     # Create a single instance for modification
     if SETTING_UP_AMI:
-        #API.start_instances(count=1, instance_type='t3a.xlarge')
-        API.prepare_machine_environments(PSWD)
+        API.start_instances(count=1, instance_type='t3a.xlarge')
+        API.prepare_machine_environments(PSWD, custom_ami=False)
+
+    # Create instances from a custom AMI
+    if CUSTOM_AMI_START:
+        API.start_instances(count=1, instance_type='t3a.xlarge',
+                            custom_ami_name="ami-09f01c0e0942ad784")
+        time.sleep(30)
+        API.prepare_machine_environments(PSWD, custom_ami=True)
 
 
 if __name__ == "__main__":
