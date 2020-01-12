@@ -348,7 +348,7 @@ class AWSHandler():
         credential_path = os.path.join(here, 'ec2-keypair.pem')
 
         # Iterate through hosts and create commands for configuring computers
-        print("INSTANCE INFO: {}".format(self.get_instance_info()))
+        print("INSTANCE INFO: %s" % (self.get_instance_info()))
 
         # Iterate through hosts for setup
         index = 0
@@ -361,7 +361,6 @@ class AWSHandler():
             # Commands used for ssh login
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
                             '--pwd %s --custom_ami %s' % (password, custom_ami)
-            print(setup_command)
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
 

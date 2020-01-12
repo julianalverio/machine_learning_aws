@@ -48,7 +48,7 @@ def run_setup(password, custom_ami="no", pull_specific_data=False, host=None):
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
 
-    print("CUSTOM AMI IS: {}".format(custom_ami))
+    print("USE CUSTOM AMI? %s" % (custom_ami))
     # Only do the following if setting up instance from scratch
     if custom_ami == "no":
         # Create a .txt file for passwords
@@ -118,7 +118,6 @@ def main():
     args = parser.parse_args()
 
     # Run setup command for instance - note this depends on AMI we use
-    print("ARGS: {}".format(args.custom_ami))
     run_setup(args.pwd, custom_ami=args.custom_ami)
 
 if __name__ == '__main__':
