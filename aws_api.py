@@ -364,14 +364,7 @@ class AWSHandler():
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
 
-            # Only need to do setup, not clone
-            if custom_ami == "yes":
-                ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
-                              'ubuntu@%s %s' % (credential_path, host, clone_command)
-
-            # If creating from scratch, run setup + clone repository
-            else:
-                ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
+            ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
                               'ubuntu@%s %s' % (credential_path, host, clone_command)
 
             # ssh login and run relevant command
