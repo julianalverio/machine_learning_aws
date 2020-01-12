@@ -368,7 +368,7 @@ class AWSHandler():
             # Only need to do setup, not clone
             if custom_ami == "yes":
                 ssh_command = 'ssh -i %s -o "StrictHostKeyChecking no" ' \
-                              'ubuntu@%s %s' % (credential_path, host, setup_command)
+                              'ubuntu@%s %s' % (credential_path, host, clone_command)
 
             # If creating from scratch, run setup + clone repository
             else:
@@ -788,14 +788,14 @@ def main():
     EMAIL = False
     EMAIL_CUSTOM = False
     FULL_START = False
-    CUSTOM_AMI_START = False
+    CUSTOM_AMI_START = True
     FULL_CUSTOM_START = False
     ROLLING_START = False
     SAVE_INSTANCE_IDs = False
     HIBERNATE = False
     TERMINATE = False
     DEBUGGING = False
-    SETTING_UP_AMI = True
+    SETTING_UP_AMI = False
 
     # Password for configuring machine environments
     PSWD = 'pantalones'
