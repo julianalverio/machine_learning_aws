@@ -356,6 +356,7 @@ class AWSHandler():
 
             # For progress display only
             print("Iterated through {} hosts".format(index))
+            print("Custom AMI: {}".format(custom_ami))
 
             # Commands used for ssh login
             setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
@@ -834,7 +835,8 @@ def main():
 
     # Create a single instance for modification
     if SETTING_UP_AMI:
-        API.start_instances(count=1, instance_type='t3a.xlarge')
+        #API.start_instances(count=1, instance_type='t3a.xlarge')
+        #time.sleep(30)
         API.prepare_machine_environments(PSWD, custom_ami=False)
 
     # Create instances from a custom AMI

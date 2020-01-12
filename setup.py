@@ -48,9 +48,11 @@ def run_setup(password, custom_ami=False):
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
 
+    print("CUSTOM AMI IS: {}".format(custom_ami))
     # Only do the following if setting up instance from scratch
     if not custom_ami:
         # Create a .txt file for passwords
+        print("CREATING TEXT FILE FOR PASSWORD")
         create_password_text_file(password)
         os.chdir('/home/ubuntu/machine_learning_aws')
 
