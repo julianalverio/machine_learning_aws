@@ -43,7 +43,8 @@ def replaceAll(file, searchExp, replaceExp):
         sys.stdout.write(line)
 
 
-def run_setup(password, custom_ami="no", pull_specific_data=False, host=None):
+def run_setup(password, custom_ami="no", pull_specific_data=False,
+              username=None):
     """Function that is called inside each remote AWS EC2 instance. Note the
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
@@ -75,16 +76,28 @@ def run_setup(password, custom_ami="no", pull_specific_data=False, host=None):
 
     # Set up daily user files that can later be retrieved for saving work
     print('SETTING UP DAILY USER FILES')
+    # TODO: FURTHER TESTING ON THIS CONDITIONAL BRANCH
     if pull_specific_data:
-        os.system(
-            'cp -r /home/ubuntu/machine_learning_aws/template'
-            '/home/ubuntu/machine_learning_aws/%s') % (host)
-        os.chdir('/home/ubuntu')
+        try:
+            os.system(
+                'cp -rf /home/ubuntu/machine_learning_aws/student_copies/'
+                '/daily_user /home/ubuntu/machine_learning_aws/daily_user') % \
+            (username)
+
+        except FileNotFoundError:
+            print("Unable to pull user-specific data.  Pulling data from "
+                  "template instead.")
+            os.system(
+                'cp -r /home/ubuntu/machine_learning_aws/template '
+                '/home/ubuntu/machine_learning_aws/daily_user')
+
     else:
         os.system(
             'cp -r /home/ubuntu/machine_learning_aws/template '
             '/home/ubuntu/machine_learning_aws/daily_user')
-        os.chdir('/home/ubuntu')
+
+    # Set directory
+    os.chdir('/home/ubuntu')
 
     # Changing ubuntu password (to common password for entire class)
     print('CHANGING UBUNTU PASSWORD')
@@ -110,15 +123,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pwd', type=str, help="String password used for ssh "
                                                 "login into instance")
-    parser.add_argument('--custom_ami', type=str, help="yes/no flag for "
-                                                "whether or not we use a custom"
-                                                "AMI. If you do not know what "
-                                                 "this means, you should "
-                                                 "probably set equal to False.")
+    parser.add_argument('--custom_ami', type=str, help="yes/no string flag for "
+                        "whether or not we use a custom AMI. If you do not "
+                         "know what this means, you should probably set equal "
+                        "to False.")
+    parser.add_argument('--username', type=str, help="String for username "
+                        "assigned to this specific IP address.", default="N/A")
     args = parser.parse_args()
 
     # Run setup command for instance - note this depends on AMI we use
-    run_setup(args.pwd, custom_ami=args.custom_ami)
+    run_setup(args.pwd, custom_ami=args.custom_ami, username=args.username)
 
 if __name__ == '__main__':
     main()

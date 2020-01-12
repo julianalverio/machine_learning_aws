@@ -330,7 +330,8 @@ class AWSHandler():
         groups.append(group[:-1])
         return groups
 
-    def prepare_machine_environments(self, password, custom_ami="no"):
+    def prepare_machine_environments(self, password, custom_ami="no",
+                                     pull_specific_data=False):
         """Function for setting up our active instances.  Once you've run
         start_instances():
 
@@ -350,6 +351,10 @@ class AWSHandler():
         # Iterate through hosts and create commands for configuring computers
         print("INSTANCE INFO: %s" % (self.get_instance_info()))
 
+        # In case we need it, let's get IP to username mappings
+        ip_address_to_useremail_user, _ = \
+            self.make_ip_to_username_mapping()
+
         # Iterate through hosts for setup
         index = 0
         for _, _, host, _ in self.get_instance_info():
@@ -359,8 +364,16 @@ class AWSHandler():
             print("Custom AMI: {}".format(custom_ami))
 
             # Commands used for ssh login
-            setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
-                            '--pwd %s --custom_ami %s' % (password, custom_ami)
+            if not pull_specific_data:
+                setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
+                                '--pwd %s --custom_ami %s' % (password, custom_ami)
+            else:
+                # Get username from mapping
+                username = ip_address_to_useremail_user[host]
+                setup_command = 'sudo python3 machine_learning_aws/setup.py ' \
+                                '--pwd %s --custom_ami %s --username %s' % (
+                                password, custom_ami, username)
+
             clone_command = '"sudo rm -rf machine_learning_aws; git clone ' \
                             'https://github.com/julianalverio/machine_learning_aws.git && %s"' % setup_command
 
@@ -675,6 +688,35 @@ class AWSHandler():
 
         return ip_address_to_useremail_user
 
+    def make_ip_to_username_mapping(self):
+        """Class method helper function for creating an IP address to
+        username mapping.  This will be used for determining available IP
+        addresses as well as saving/pulling work from users to their specific
+        machines.
+
+        Returns:
+            1. An IP_to_user hash map (Python dictionary) that is indexed by
+            IP address and maps to an email and username.
+            2. A user_to_IP hash map (Python dictionary) that is indexed by
+            user and maps to IP address.
+            """
+
+        # Initialize output objects
+        ip_address_to_useremail_user = dict()
+        useremail_user_to_ip_address = dict()
+
+        # Iterate through users, user names
+        for idx, ((uid, username, name_of_user, email),
+                  (_, _, ip_address, _)) in enumerate(
+            zip(self.user_info, instance_info)):
+            # Add (key, value) pair to mapping
+            ip_address_to_useremail_user[ip_address] = [email, username]
+            useremail_user_to_ip_address[(email, username)] = ip_address
+
+        # Return dictionaries
+        return ip_address_to_useremail_user, useremail_user_to_ip_address
+
+
     def get_available_ip_addresses(self):
         """Class method for seeing what additional IP addresses are available
         after users are paired to IP addresses.
@@ -686,14 +728,10 @@ class AWSHandler():
         # Get instance information
         instance_info = self.get_instance_info()
         ip_addresses = [ip_address for _, _, ip_address, _ in instance_info]
-        ip_address_to_useremail_user = dict()
 
-        # Iterate through users, user names
-        for idx, ((uid, username, name_of_user, email),
-                  (_, _, ip_address, _)) in enumerate(
-            zip(self.user_info, instance_info)):
-            # Add (key, value) pair to mapping
-            ip_address_to_useremail_user[ip_address] = [email, username]
+        # Call helper function for getting IP to user mappings
+        ip_address_to_useremail_user, _ = \
+            self.make_ip_to_username_mapping()
 
         # Iterate and find remaining IP addresses
         remaining_ip_addresses = list()
@@ -705,7 +743,7 @@ class AWSHandler():
         print('remaining ip addresses:', remaining_ip_addresses)
         return remaining_ip_addresses
 
-    # TODO: Test
+    # TODO: NEED TO SET FINAL LOCATION FOR
     def backup_machines(self):
         """Class method for backing up student-populated content from the
         course to GitHub under the 'daily_users/' sub-directory.
@@ -717,27 +755,47 @@ class AWSHandler():
             if state == 'running':
                 live_addresses.append(ip_address)
 
+        # Call helper function for getting IP to user mappings
+        ip_address_to_useremail_user, _ = \
+            self.make_ip_to_username_mapping()
+
         # Make a directory where you can clone all the local copies of the repo
         here = os.getcwd()
         root_save_dir = os.path.join(here, 'student_copies')
+
+        # Create root_save_dir if it doesn't already exist
         try:
-            os.mkdir(save_dir)
+            os.mkdir(root_save_dir)
         except FileExistsError:
             pass
+
+        # Iterate through hosts and create user dirs if they don't already exist
         for host in live_addresses:
+
+            # Since IP may change, get user
+            _, username = ip_address_to_useremail_user[host]
+
+            # Directory name for user
             host_save_dir = os.path.join(root_save_dir, host)
+
+            # Create host_save_dir if it doesn't already exist
             try:
                 os.mkdir(host_save_dir)
             except FileExistsError:
                 pass
 
+        # File key path for securitys
         credential_path = os.path.join(here, 'ec2-keypair.pem')
+
 
         # Iterate through hosts at different IP addresses
         for host in live_addresses:
 
+            # Since IP may change, get user
+            _, username = ip_address_to_useremail_user[host]
+
             # Make host directory according to IP address
-            host_save_dir = os.path.join(root_save_dir, host)
+            host_save_dir = os.path.join(root_save_dir, username)
 
             # File transfer command
             scp_command = 'scp -i %s -o "StrictHostKeyChecking no" ' \
@@ -781,7 +839,6 @@ def main():
     EMAIL_CUSTOM = False
     FULL_START = False
     CUSTOM_AMI_START = True
-    FULL_CUSTOM_START = False
     ROLLING_START = False
     SAVE_INSTANCE_IDs = False
     HIBERNATE = False
@@ -796,9 +853,6 @@ def main():
     API = AWSHandler()
 
     # Based off of boolean flags, run specific commands for AWS
-    if FULL_CUSTOM_START:
-        # TODO: Complete
-        API.start_instances(count=65, instance_type='t3a.xlarge')
     elif FULL_START:
         API.start_instances(count=65, instance_type='t3a.xlarge')
         API.prepare_machine_environments(PSWD)
@@ -828,8 +882,8 @@ def main():
 
     # Create a single instance for modification
     if SETTING_UP_AMI:
-        #API.start_instances(count=1, instance_type='t3a.xlarge')
-        #time.sleep(30)
+        API.start_instances(count=1, instance_type='t3a.xlarge')
+        time.sleep(30)
         API.prepare_machine_environments(PSWD, custom_ami="no")
 
     # Create instances from a custom AMI
