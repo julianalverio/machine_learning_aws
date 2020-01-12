@@ -701,6 +701,10 @@ class AWSHandler():
             user and maps to IP address.
             """
 
+        # Get instance information
+        instance_info = self.get_instance_info()
+        ip_addresses = [ip_address for _, _, ip_address, _ in instance_info]
+
         # Initialize output objects
         ip_address_to_useremail_user = dict()
         useremail_user_to_ip_address = dict()
