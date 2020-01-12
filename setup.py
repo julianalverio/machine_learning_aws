@@ -112,6 +112,7 @@ def main():
     args = parser.parse_args()
 
     # Run setup command for instance - note this depends on AMI we use
+    print("ARGS: {}".format(args.custom_ami))
     run_setup(args.pwd, custom_ami=args.custom_ami)
 
 if __name__ == '__main__':
