@@ -43,7 +43,7 @@ def replaceAll(file, searchExp, replaceExp):
         sys.stdout.write(line)
 
 
-def run_setup(password, custom_ami="no"):
+def run_setup(password, custom_ami="no", pull_specific_data=False, host=None):
     """Function that is called inside each remote AWS EC2 instance. Note the
     print statements below are simply used to monitor progress for
     configuring each AWS instance"""
@@ -67,18 +67,24 @@ def run_setup(password, custom_ami="no"):
         os.system(
             'cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc')
 
-        # Set up daily user files that can later be retrieved for saving work
-        print('SETTING UP DAILY USER FILES')
-        os.system(
-            'cp -r /home/ubuntu/machine_learning_aws/template '
-            '/home/ubuntu/machine_learning_aws/daily_user')
-        os.chdir('/home/ubuntu')
-
         # Initializing conda
         print('DOING CONDA INIT')
         os.chdir('/home/ubuntu/')
         os.system('./conda/bin/conda init')
         os.system('./conda/bin/conda init bash')
+
+    # Set up daily user files that can later be retrieved for saving work
+    print('SETTING UP DAILY USER FILES')
+    if pull_specific_data:
+        os.system(
+            'cp -r /home/ubuntu/machine_learning_aws/template'
+            '/home/ubuntu/machine_learning_aws/%s') % (host)
+        os.chdir('/home/ubuntu')
+    else:
+        os.system(
+            'cp -r /home/ubuntu/machine_learning_aws/template '
+            '/home/ubuntu/machine_learning_aws/daily_user')
+        os.chdir('/home/ubuntu')
 
     # Changing ubuntu password (to common password for entire class)
     print('CHANGING UBUNTU PASSWORD')
