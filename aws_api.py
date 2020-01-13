@@ -281,8 +281,10 @@ class AWSHandler(object):
             print('Now preparing machine %s of %s' % (idx + 1, num_machines))
             first_cmd = "cat /home/ubuntu/machine_learning_aws/access.txt | sudo passwd ubuntu"
             second_cmd = 'sudo service sshd restart'
+            zero_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, 'ls')
             first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
             second_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, second_cmd)
+            os.system(zero_ssh)
             os.system(first_ssh)
             os.system(second_ssh)
 
@@ -335,7 +337,7 @@ class AWSHandler(object):
 
     def start(self, ami):
         self.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
-        # self.prepare_machines()
+        self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
 
