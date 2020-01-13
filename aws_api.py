@@ -279,12 +279,9 @@ class AWSHandler(object):
         num_machines = self.users.shape[0]
         for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
             print('Now preparing machine %s of %s' % (idx + 1, num_machines))
-            first_cmd = "python /home/ubuntu/machine_learning_aws/setup.py"
-            # second_cmd = 'sudo service sshd restart'
+            first_cmd = "python3 /home/ubuntu/machine_learning_aws/setup.py"
             first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
-            # second_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, second_cmd)
             os.system(first_ssh)
-            # os.system(second_ssh)
 
 
     # TODO
@@ -330,7 +327,7 @@ class AWSHandler(object):
         # Hang until the instances are ready
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
         print('Sleeping before mapping machine information')
-        time.sleep(30)
+        time.sleep(60)
         self.map_machine_info()
 
     def start(self, ami):
