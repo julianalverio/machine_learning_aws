@@ -21,8 +21,6 @@ def generate_keypair():
     print("Keypair written")
 
 
-
-
 class Handler(object):
     def __init__(self, path):
         full_path = os.path.join(os.getcwd(), path)
@@ -34,9 +32,6 @@ class Handler(object):
         users['username'] = usernames
         print(users.head(3))
         self.users = users
-
-
-
 
     def start_instances(self, count=1, instance_type='t3a.xlarge',
                         ami_type="ubuntu"):

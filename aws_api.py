@@ -36,17 +36,20 @@ class AWSHandler(object):
     to users for information on their assigned AWS instances.
     """
     # TODO: better saving so multiple runs don't overwrite each other
-    def __init__(self, path):
-        full_path = os.path.join(os.getcwd(), path)
-        users = pd.read_csv(full_path, header=0)
-        if any(['@' in field for field in list(users)]):
-            users = pd.read_csv(full_path, header=None)
-            users.columns = ['name', 'email']
-        usernames = users['email'].apply(lambda email: re.sub('[^0-9a-zA-Z]+', '', email.split('@')[0]).lower())
-        users['username'] = usernames
-        print(users.head(3))
-        self.users = users
-        self.users.to_csv('handler_state.csv')
+    def __init__(self, path, read=True):
+        if not read:
+            full_path = os.path.join(os.getcwd(), path)
+            users = pd.read_csv(full_path, header=0)
+            if any(['@' in field for field in list(users)]):
+                users = pd.read_csv(full_path, header=None)
+                users.columns = ['name', 'email']
+            usernames = users['email'].apply(lambda email: re.sub('[^0-9a-zA-Z]+', '', email.split('@')[0]).lower())
+            users['username'] = usernames
+            print(users.head(3))
+            self.users = users
+            self.users.to_csv('handler_state.csv')
+        else:
+            self.users = pd.read_csv(os.path.join(os.getcwd(), 'handler_state.csv'))
 
     def generate_keypair(self):
         """Given that you have properly set up the AWS CLI, generate a .pem file.
@@ -58,43 +61,43 @@ class AWSHandler(object):
             f.write(KeyPairOut)
         print("Keypair written")
 
-    def restart_instances(self):
-        """Function for restarting instances that have been stopped, but not
-        terminated.  This function is typically used if we want to restart
-        instances that have had Anaconda environments already installed on
-        them (i.e. maintain an offline, persistent state).
-        """
-
-        ec2 = boto3.resource('ec2', region_name="us-east-1")
-        print("AMI is: {}, instance type is: {}".format(ami, instance_type))
-        instances = self.get_instances()
-
-        # Now iterate through instances and append ID to list of IDs
-        with open("instance_IDs.txt", "r") as instance_IDs:
-            instance_IDs.read()
-            instance_IDs.close()
-
-        # Now restart all instances at once
-        try:  # Try to restart the instance
-            instances = ec2.reboot_instances(InstanceIds=instance_ids,
-                                             DryRun=True)
-
-        except ClientError as e:  # In case we cannot restart instances
-            if 'DryRunOperation' not in str(e):
-                print("You don't have permission to reboot instances.")
-                raise
-
-        print("Stopped instances have been restarted \n Instance names:")
-        # Print all the instance names
-        for instance in instances:
-            print(instance.instance_id)
-
-        # After creating instances, hang
-        self.wait_for_instances(['running', 'terminated', 'shutting-down'])
+    # def restart_instances(self):
+    #     """Function for restarting instances that have been stopped, but not
+    #     terminated.  This function is typically used if we want to restart
+    #     instances that have had Anaconda environments already installed on
+    #     them (i.e. maintain an offline, persistent state).
+    #     """
+    #
+    #     ec2 = boto3.resource('ec2', region_name="us-east-1")
+    #     print("AMI is: {}, instance type is: {}".format(ami, instance_type))
+    #     instances = self.get_instances()
+    #
+    #     # Now iterate through instances and append ID to list of IDs
+    #     with open("instance_IDs.txt", "r") as instance_IDs:
+    #         instance_IDs.read()
+    #         instance_IDs.close()
+    #
+    #     # Now restart all instances at once
+    #     try:  # Try to restart the instance
+    #         instances = ec2.reboot_instances(InstanceIds=instance_ids,
+    #                                          DryRun=True)
+    #
+    #     except ClientError as e:  # In case we cannot restart instances
+    #         if 'DryRunOperation' not in str(e):
+    #             print("You don't have permission to reboot instances.")
+    #             raise
+    #
+    #     print("Stopped instances have been restarted \n Instance names:")
+    #     # Print all the instance names
+    #     for instance in instances:
+    #         print(instance.instance_id)
+    #
+    #     # After creating instances, hang
+    #     self.wait_for_instances(['running', 'terminated', 'shutting-down'])
 
     def get_instance_info(self):
         """Retrieve instance-related information using
-        instances that are currently active and associated with the .pem key
+        instances that are CURRENTLY RUNNING and associated with the .pem key
         file in this directory.
 
         Returns:
@@ -183,7 +186,6 @@ class AWSHandler(object):
         # Hang until the instances are ready.
         self.wait_for_instances(['stopping', 'stopped', 'terminated'])
 
-    # TODO
     def send_email(self, to_addr, body):
         """Send an email from our super secure address. """
 
@@ -204,29 +206,28 @@ class AWSHandler(object):
         server.sendmail(fromaddr, to_addr, text)
         server.quit()
 
-    # TODO
     def mail_to_list(self):
         """Send an email to everyone in the provided csv."""
 
         num_users = self.users.shape[0]
         for idx, (user, email, username, ip_address, instance_id) in self.users.iterrows():
+            if not isinstance(user, str):
+                continue
             print('Sending email %s out of %s' % ((idx + 1), num_users))
 
             body = """\
                Hola %s,
 
-               Below is your login information for today. 
+               
+               Below is your login information for today.
+               Today's password: pantalones 
 
                Mac users and users running Linux: Please
                copy and paste the following commands into 
                your command line.
-
                Windows users: paste the following commands
                into Git Bash.
 
-               PASSWORD: pantalones
-
-               
                1. Set up ssh port forwarding:
                ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@%s
                Then type the password.
@@ -258,36 +259,21 @@ class AWSHandler(object):
             self.send_email(email, body)
         print('Done sending emails.')
 
-    # TODO: make sure you only grab the live ones
     def map_machine_info(self):
         """Update the ip_address and instance_id fields in the self.users dataframe; 1:1 machine to user mapping."""
-        import pdb; pdb.set_trace()
 
         info_df = pd.DataFrame([(ip_address, instance_id) for instance_id, _, ip_address, _ in self.get_instance_info()])
         info_df.columns = ['ip_address', 'instance_id']
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
-    # TODO
-    def get_available_ip_addresses(self):
-        """Returns which IP addresses are currently unassigned, as a Pandas series."""
-
-        available_df = self.users[self.users.isnull().any(axis=1)]
-        available_ips = available_df['ip_addresses']
-        print('Available IPs:', available_ips)
-        return available_ips
-
-    # TODO
-    def terminate_extra_machines(self):
-        """Terminate all unassigned machines"""
-
-        import pdb; pdb.set_trace()
-
-        available_ips = set(self.get_available_ip_addresses().tolist())
-        instances = self.get_instances()
-
-        available_instances = [instance for instance in instances if instance.public_ip_address in available_ips]
-        [instance.terminate() for instance in available_instances]
+    # def get_available_ip_addresses(self):
+    #     """Returns which IP addresses are currently unassigned, as a Pandas series."""
+    #
+    #     available_df = self.users[self.users.isnull().any(axis=1)]
+    #     available_ips = available_df['ip_addresses']
+    #     print('Available IPs:', available_ips)
+    #     return available_ips
 
     # TODO
     def backup_machines(self):
@@ -314,7 +300,6 @@ class AWSHandler(object):
         os.system('git commit -m "Daily student backup"')
         os.system('git push')
 
-    # TODO
     def start_instances(self, count, ami, instance_type='t3a.xlarge'):
         """Spin up n new EC2 instances from scratch, then hang until they're 'running'"""
 
@@ -332,15 +317,12 @@ class AWSHandler(object):
         )
         # Hang until the instances are ready
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
+        print('sleeping before mapping machine information')
+        time.sleep(30)
         self.map_machine_info()
 
-    # TODO
     def start(self, ami):
-        # kill any leftover instances
-        self.terminate_instances()
         handler.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
-        print('Started all the instances, hanging for a minute to start up.')
-        time.sleep(60)
         self.mail_to_list()
         print('Done starting up.')
 
@@ -351,18 +333,20 @@ if __name__ == "__main__":
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-0946a80e1ddd4a50c')
+    parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
     args = parser.parse_args()
     assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
         'Must select exactly 1 among: start, stop, or backup'
 
-    handler = AWSHandler(args.path)
-    handler.start_instances(count=1, instance_type='t3a.xlarge', ami='ami-0946a80e1ddd4a50c')
+    if not args.start:
+        handler = AWSHandler(args.path, read=True)
+    else:
+        handler = AWSHandler(args.path, read=False)
 
-    # if args.stop:
-    #     assert input('Are you sure you want to kill all the machines?') == 'YES'
-    #     handler.terminate_instances()
-    # elif args.start:
-    #     handler.start(args.ami)
-    # else:
-    #     handler.backup_machines()
+    if args.stop:
+        assert input('Are you sure you want to kill all the machines?') == 'YES'
+        handler.terminate_instances()
+    elif args.start:
+        handler.start(args.ami)
+    else:
+        handler.backup_machines()
