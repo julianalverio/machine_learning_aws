@@ -278,7 +278,7 @@ class AWSHandler(object):
     def prepare_machines(self):
         num_machines = self.users.shape[0]
         for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
-            print('Now preparing machine %s of %s' % (ip_address, num_machines))
+            print('Now preparing machine %s of %s' % (idx + 1, num_machines))
             first_cmd = "cat /home/ubuntu/machine_learning_aws/access.txt | sudo passwd ubuntu"
             second_cmd = 'sudo service sshd restart'
             first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
