@@ -6,6 +6,7 @@ source ~/.bashrc
 conda init
 conda init bash
 source ~/.bashrc
+conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
 
 cp -r /home/ubuntu/machine_learning_aws/template /home/ubuntu/machine_learning_aws/daily_user
 
@@ -14,5 +15,4 @@ sudo cat /etc/ssh/sshd_config | sed 's/PasswordAuthentication no/PasswordAuthent
 sudo service sshd restart
 
 sudo apt install tmux
-
-tmux new-session -d -s "jupyter" 
+tmux new-session -d 'conda activate conda_env && jupyter notebook --port=8888 --no-browser --ip="*" --NotebookApp.token="" --NotebookApp.password="" /home/ubuntu/machine_learning_aws/daily_user'
