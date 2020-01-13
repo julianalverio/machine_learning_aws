@@ -258,7 +258,7 @@ class AWSHandler():
         # After creating instances, hang
         self.wait_for_instances(['stopping', 'stopped', 'terminated'])
 
-    def get_user_info(self):
+    def get_user_info(self, file="users.csv"):
         """Read from users.csv. Generate usernames by removing alphanumeric
         characters from their email username.
 
@@ -266,7 +266,7 @@ class AWSHandler():
              list of (username, user's full name, email address) tuples."""
 
         # Opens users file and reads row
-        with open('users.csv', 'rU') as f:
+        with open(file, 'rU') as f:
             reader = csv.reader(f)
             user_info = list()
             for idx, row in enumerate(reader):
@@ -420,7 +420,7 @@ class AWSHandler():
             msg = MIMEMultipart()
             msg['From'] = fromaddr
             msg['To'] = toaddr
-            msg['Subject'] = "FIXED Updated AWS Login Information"
+            msg['Subject'] = "Updated AWS Login Information"
 
             # Text body of message
             if MSG_TYPE == "full":
@@ -839,9 +839,9 @@ def main():
 
     # Flags for different commands
     EMAIL = False
-    EMAIL_CUSTOM = False
+    EMAIL_CUSTOM = True
     FULL_START = False
-    CUSTOM_AMI_START = True
+    CUSTOM_AMI_START = False
     ROLLING_START = False
     SAVE_INSTANCE_IDs = False
     HIBERNATE = False
