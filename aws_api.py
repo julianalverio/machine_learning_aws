@@ -1,7 +1,6 @@
 """AWS API script for setting up all of our EC2 machines.  Our class object
 AWSHandler() also makes calls to other relevant scripts in this repository. """
 
-# Native Python imports
 import time
 import os
 import csv
@@ -9,10 +8,9 @@ import re
 import math
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
-# External package imports
 import boto3
 import smtplib
+import pandas as pd
 
 """
 Reference for this project: 
@@ -37,8 +35,12 @@ class AWSHandler():
     to users for information on their assigned AWS instances.
     """
 
-    def __init__(self):
-        self.user_info = self.get_user_info()
+    def __init__(self, path):
+        full_path = os.path.join(os.getcwd(), path)
+        users = pd.read_csv(full_path, header=0)
+        if any(['@' in field for field in list(users)]):
+            users = pd.read_csv(full_path, header=None)
+        self.users = users
 
     def generate_keypair(self):
         """Given that you have properly set up the AWS CLI, this will generate
