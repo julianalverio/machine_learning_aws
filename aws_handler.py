@@ -2,6 +2,7 @@ import pandas as pd
 import argparse
 import os
 import boto3
+import re
 
 
 # first feature: path intake
@@ -28,7 +29,12 @@ class Handler(object):
         users = pd.read_csv(full_path, header=0)
         if any(['@' in field for field in list(users)]):
             users = pd.read_csv(full_path, header=None)
+            users.columns = ['name', 'email']
+        usernames = users['email'].apply(lambda email: re.sub('[^0-9a-zA-Z]+', '', email.split('@')[0]).lower())
+        users['username'] = usernames
+        print(users.head(3))
         self.users = users
+
 
 
 
@@ -73,6 +79,6 @@ if __name__ == '__main__':
     # print(handler.get_credentials_path())
     # handler.push_button()
     # generate_keypair()
-    handler.start_instances(1)
+    # handler.start_instances(1)
 
 
