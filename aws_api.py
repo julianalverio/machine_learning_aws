@@ -275,6 +275,18 @@ class AWSHandler(object):
     #     print('Available IPs:', available_ips)
     #     return available_ips
 
+    def prepare_machines(self):
+        num_machines = self.users.shape[0]
+        for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
+            print('Now preparing machine %s of %s' % (ip_address, num_machines))
+            first_cmd = "cat /home/ubuntu/machine_learning_aws/access.txt | sudo passwd ubuntu"
+            second_cmd = 'sudo service sshd restart'
+            first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
+            second_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, second_cmd)
+            os.system(first_ssh)
+            os.system(second_ssh)
+
+
     # TODO
     def backup_machines(self):
         """Back up student-populated content from the
@@ -317,12 +329,13 @@ class AWSHandler(object):
         )
         # Hang until the instances are ready
         self.wait_for_instances(['running', 'terminated', 'shutting-down'])
-        print('sleeping before mapping machine information')
+        print('Sleeping before mapping machine information')
         time.sleep(30)
         self.map_machine_info()
 
     def start(self, ami):
-        handler.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
+        self.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
+        self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
 
@@ -344,7 +357,7 @@ if __name__ == "__main__":
         handler = AWSHandler(args.path, read=False)
 
     if args.stop:
-        assert input('Are you sure you want to kill all the machines?') == 'YES'
+        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
         handler.terminate_instances()
     elif args.start:
         handler.start(args.ami)
