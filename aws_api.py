@@ -186,11 +186,7 @@ class AWSHandler():
         return instance_info
 
     def get_instances(self):
-        """Class method for retrieving all instance objects.
-
-        Returns:
-            A list of EC2 instance class objects.
-        """
+        """Get all instance objects."""
 
         # Create EC2 resource
         ec2 = boto3.resource('ec2')
@@ -890,6 +886,6 @@ def main():
 if __name__ == "__main__":
     API = AWSHandler()
     API.start_instances(count=1, instance_type='t3a.xlarge',
-                        custom_ami_name="ami-09f01c0e0942ad784")
+                        custom_ami_name='ami-00a208c7cdba991ea')
 
     # main()
