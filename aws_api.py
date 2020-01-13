@@ -335,7 +335,7 @@ class AWSHandler(object):
 
     def start(self, ami):
         self.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
-        self.prepare_machines()
+        # self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
 
