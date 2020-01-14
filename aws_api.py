@@ -194,7 +194,7 @@ class AWSHandler(object):
         msg = MIMEMultipart()
         msg['From'] = fromaddr
         msg['To'] = to_addr
-        msg['Subject'] = "AWS Login Information!"
+        msg['Subject'] = "Notebook Modification!"
 
         msg.attach(MIMEText(body, 'plain'))
         server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -218,12 +218,12 @@ class AWSHandler(object):
             body = """\
                Hola %s,
 
-               
+
                Below is your login information for today.
-               Today's password: pantalones 
+               Today's password: pantalones
 
                Mac users and users running Linux: Please
-               copy and paste the following commands into 
+               copy and paste the following commands into
                your command line.
                Windows users: paste the following commands
                into Git Bash.
@@ -231,30 +231,31 @@ class AWSHandler(object):
                1. Set up ssh port forwarding:
                ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@%s
                Then type the password.
-               
+
                If this did not return an error, go to step 2.
-               If you get an error that says something like: 
+               If you get an error that says something like:
                bind [127.0.0.1]:5005: Address already in use
-               
+
                Windows users, run this:
                kill $(lsof -t -i :5005)
                Then retry step 1.
-               
+
                Mac and Linux users, run this:
                pkill -f 5005
                Then retry step 1
 
-               2. Go to your web browser (such 
+               2. Go to your web browser (such
                as Chrome) and type:
                localhost:5005
 
-               This will take you to your AWS Jupyter 
+               This will take you to your AWS Jupyter
                notebooks! If this worked for you, you're all set!
-               
+
 
                Mucho amor,
                GSL Uruguay Technical Team
                """ % (user, ip_address)
+
 
             self.send_email(email, body)
         print('Done sending emails.')
@@ -266,14 +267,6 @@ class AWSHandler(object):
         info_df.columns = ['ip_address', 'instance_id']
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
-
-    # def get_available_ip_addresses(self):
-    #     """Returns which IP addresses are currently unassigned, as a Pandas series."""
-    #
-    #     available_df = self.users[self.users.isnull().any(axis=1)]
-    #     available_ips = available_df['ip_addresses']
-    #     print('Available IPs:', available_ips)
-    #     return available_ips
 
     def prepare_machines(self):
         num_machines = self.users.shape[0]
@@ -297,17 +290,19 @@ class AWSHandler(object):
 
         # Pem file
         credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
+        import pdb; pdb.set_trace()
 
-        for _, (name, email, username, ip_address, instance_id) in assigned_machines.iterrows():
+        for _, row in assigned_machines.iterrows():
+            idx, name, email, username, ip_address, instance_id = row
             local_save_dir = os.path.join(root_save_dir, username)
-            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" ' \
+            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" -r ' \
                           'ubuntu@%s:/home/ubuntu/machine_learning_aws' \
                           '/daily_user/  %s' % (
                               credential_path, ip_address, local_save_dir)
             os.system(scp_command)
-        os.system('git add .')
-        os.system('git commit -m "Daily student backup"')
-        os.system('git push')
+        # os.system('git add .')
+        # os.system('git commit -m "Daily student backup"')
+        # os.system('git push')
 
     def start_instances(self, count, ami, instance_type='t3a.xlarge'):
         """Spin up n new EC2 instances from scratch, then hang until they're 'running'"""
@@ -345,18 +340,29 @@ if __name__ == "__main__":
     parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
     args = parser.parse_args()
-    assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
-        'Must select exactly 1 among: start, stop, or backup'
 
-    if not args.start:
-        handler = AWSHandler(args.path, read=True)
-    else:
-        handler = AWSHandler(args.path, read=False)
+    handler = AWSHandler(path=args.path, read=True)
+    # handler.start_instances(1, 'ubuntu')
+    instances = handler.get_instances()
+    new_instance = [instance for instance in instances if instance.image_id != 'ami-096943a0c2f422bd7']
+    instance = new_instance[0]
+    print(instance.image_id)
+    import pdb; pdb.set_trace()
+    pass
 
-    if args.stop:
-        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
-        handler.terminate_instances()
-    elif args.start:
-        handler.start(args.ami)
-    else:
-        handler.backup_machines()
+
+    # assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
+    #     'Must select exactly 1 among: start, stop, or backup'
+    #
+    # if not args.start:
+    #     handler = AWSHandler(args.path, read=True)
+    # else:
+    #     handler = AWSHandler(args.path, read=False)
+    #
+    # if args.stop:
+    #     assert input('Are you sure you want to kill all the machines?  ') == 'YES'
+    #     handler.terminate_instances()
+    # elif args.start:
+    #     handler.start(args.ami)
+    # else:
+    #     handler.backup_machines()
