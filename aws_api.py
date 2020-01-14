@@ -36,7 +36,7 @@ class AWSHandler(object):
     to users for information on their assigned AWS instances.
     """
     # TODO: better saving so multiple runs don't overwrite each other
-    def __init__(self, path, read=True):
+    def __init__(self, path, read=False):
         if not read:
             full_path = os.path.join(os.getcwd(), path)
             users = pd.read_csv(full_path, header=0)
@@ -264,7 +264,7 @@ class AWSHandler(object):
         """Update the ip_address and instance_id fields in the self.users dataframe; 1:1 machine to user mapping."""
 
         info_df = pd.DataFrame([(ip_address, instance_id) for instance_id, _, ip_address, _ in self.get_instance_info()])
-        info_df.columns = ['ip_address', 'instance_id']
+        info_df.columns = ['ip_address', 'instafnce_id']
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
@@ -331,8 +331,37 @@ class AWSHandler(object):
         self.mail_to_list()
         print('Done starting up.')
 
+    def start_single_instance(self, ami):
+        self.start_instances(count=1, instance_type='t3a.xlarge', ami=ami)
+        self.prepare_machines()
+        self.mail_to_list()
+        print('Done starting up.')
+
+    def scp_data_to_instances(self):
+        """Class method for scp of data to instances."""
+        instances_info = self.get_instance_info()
+        for instance in instances_info:
+            ip_address = instance[2]
+            print("IP address is %s" % (ip_address))
+            scp_command = "scp ../glove.6B.50d.txt " \
+                          "ubuntu@%s:/home/ubuntu/machine_learning_aws/data" \
+                          "/glove.6B.50d.txt" % (ip_address)
+            os.system(scp_command)
+        print("Data finished sending!")
+
+    def make_github_pull(self):
+        instances_info = self.get_instance_info()
+        for instance in instances_info:
+            ip_address = instance[2]
+            first_cmd = "cd machine_learning_aws | git pull"
+            first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ' \
+                        'ubuntu@%s %s' % (ip_address, first_cmd)
+            os.system(first_ssh)
+            print("Finished pull for IP address %s" % (ip_address))
+
 
 if __name__ == "__main__":
+    handler = AWSHandler("users.csv", read=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
@@ -341,28 +370,18 @@ if __name__ == "__main__":
     parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
     args = parser.parse_args()
 
-    handler = AWSHandler(path=args.path, read=True)
-    # handler.start_instances(1, 'ubuntu')
-    instances = handler.get_instances()
-    new_instance = [instance for instance in instances if instance.image_id != 'ami-096943a0c2f422bd7']
-    instance = new_instance[0]
-    print(instance.image_id)
-    import pdb; pdb.set_trace()
-    pass
+    assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
+        'Must select exactly 1 among: start, stop, or backup'
 
+    if not args.start:
+        handler = AWSHandler(args.path, read=True)
+    else:
+        handler = AWSHandler(args.path, read=False)
 
-    # assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
-    #     'Must select exactly 1 among: start, stop, or backup'
-    #
-    # if not args.start:
-    #     handler = AWSHandler(args.path, read=True)
-    # else:
-    #     handler = AWSHandler(args.path, read=False)
-    #
-    # if args.stop:
-    #     assert input('Are you sure you want to kill all the machines?  ') == 'YES'
-    #     handler.terminate_instances()
-    # elif args.start:
-    #     handler.start(args.ami)
-    # else:
-    #     handler.backup_machines()
+    if args.stop:
+        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
+        handler.terminate_instances()
+    elif args.start:
+        handler.start(args.ami)
+    else:
+        handler.backup_machines()
