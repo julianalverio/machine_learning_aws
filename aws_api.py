@@ -36,7 +36,7 @@ class AWSHandler(object):
     to users for information on their assigned AWS instances.
     """
     # TODO: better saving so multiple runs don't overwrite each other
-    def __init__(self, path, read=True):
+    def __init__(self, path, read=False):
         if not read:
             full_path = os.path.join(os.getcwd(), path)
             users = pd.read_csv(full_path, header=0)
@@ -263,7 +263,7 @@ class AWSHandler(object):
         """Update the ip_address and instance_id fields in the self.users dataframe; 1:1 machine to user mapping."""
 
         info_df = pd.DataFrame([(ip_address, instance_id) for instance_id, _, ip_address, _ in self.get_instance_info()])
-        info_df.columns = ['ip_address', 'instance_id']
+        info_df.columns = ['ip_address', 'instafnce_id']
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
@@ -336,8 +336,24 @@ class AWSHandler(object):
         self.mail_to_list()
         print('Done starting up.')
 
+    def scp_data_to_instances(self):
+        """Class method for scp of data to instances."""
+        instances_info = self.get_instance_info()
+        for instance in instances_info:
+            ip_address = instance[2]
+            print("IP address is %s" % (ip_address))
+            scp_command = "scp ../glove.6B.50d.txt " \
+                          "ubuntu@%s:/home/ubuntu/machine_learning_aws/data" \
+                          "/glove.6B.50d.txt" % (ip_address)
+            os.system(scp_command)
+        print("Data finished sending!")
+
+
 
 if __name__ == "__main__":
+    handler = AWSHandler('users.csv')
+    handler.scp_data_to_instances()
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
@@ -360,3 +376,4 @@ if __name__ == "__main__":
         handler.start(args.ami)
     else:
         handler.backup_machines()
+    """
