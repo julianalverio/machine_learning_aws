@@ -366,11 +366,14 @@ class AWSHandler(object):
 
 
 if __name__ == "__main__":
+    handler = AWSHandler("users.csv", read=True)
+    handler.make_github_pull()
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
-    parser.add_argument('--path', default='users_debug.csv')
+    parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
     args = parser.parse_args()
     assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
@@ -385,7 +388,8 @@ if __name__ == "__main__":
         assert input('Are you sure you want to kill all the machines?  ') == 'YES'
         handler.terminate_instances()
     elif args.start:
-        handler.start_instances(args.ami)
+        handler.start(args.ami)
     else:
         handler.backup_machines()
+    """
 

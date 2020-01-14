@@ -22,3 +22,6 @@ hosts.txt
 # Jupyter
 *checkpoint*
 data/
+
+# Random
+*.~lock*
