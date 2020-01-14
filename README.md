@@ -1,70 +1,25 @@
 # AWS for Machine Learning
-This repository contains infrastructure code for setting up AWS machines, as well as a series of Jupyter notebooks for different classroom users to interact with in their own personal EC2 consoles.
+This repository has a backup of the students' work from the class for the students to view. Each student's code is backed up to student_code/USERNAME, where the USERNAME is everything that comes before the "@" in the student's email address, with any non-english a-z characters deleted, and all characters lowercased. For example, éstuianté!@example.com would find her code under `student_copes/stdudiant`.
+The instructor's version of the code is found under `instructor_code/`
+
+This repository also has our infrastructure for setting up EC2 machines each day.
+
 
 ## Jupyter Notebooks for Machine Learning
 One of the primary purposes of this repository is to maintain a persistent state for our interactive teaching code base, which includes both template and student-edited Jupyter notebooks.  Instructions for accessing template Jupyter notebooks, student Jupyter notebooks, and data are each discussed individually below:
 
-1. **Jupyter Notebook Templates**: These can be cloned, edited, or modified in the `template/` sub-directory.
-2. **Jupyter Notebook Files for Students**: These Jupyter notebooks can be accessed on indiviudal EC2 instances through the `daily_user/` sub-directory in the `machine_learning_aws/` repository, or through the absolute path `/home/ubuntu/machine_learning_aws/daily_user/`.  Each of these `daily_user/` repositories will be specific to each EC2 user.
-3. **Data for Students**: Data for this course can be found on the EC2 instances under the `data/` sub-directory in the `machine_learning_aws/` repository, or through the absolute path `/home/ubuntu/machine_learning_aws/data/`.  To avoid placing large datasets on GitHub, many of the datasets for this course will be downloaded separately via the `wget` command within the AWS EC2 instances.
+1. **Jupyter Notebook under `instructor_code`**: These are template for the student to modify.
+2. **Jupyter Notebook Files for Students**: We will copy the template notebooks from `instructor_code` to a location where the students can use it every day. For now, the location is `machine_learning_aws/daily_use`, though this location may change as we continue the development of this repository.
+3. **Data for Students**: Data for this course can be found on the EC2 instances under the `machine_learning_aws/data/` sub-directory in the `machine_learning_aws/` repository, or through the absolute path `/home/ubuntu/machine_learning_aws/data/`.
 
 
 ## Installing and Configuring Conda Environment on EC2 Instances: Ubuntu AMI
-Below are the instructions for using an Ubuntu AMI, which is configured through our `aws_api.py` and `setup.py` scripts.  If you are using a custom AMI, these instructions are not necessary to follow.  You can follow the instructions in the section below: "Starting a Jupyter Notebook in a Custom AMI".
+Our daily login/setup instructions are still changing, as we are still developing this code to make it simpler to use and more reliable.
+We will post instructions shortly on how to log in to the EC2 instances, and how to set up your environment on your own computer.
 
-Unfortunately, Python does not support sourcing `.bashrc` files, so this sourcing step is required to be done outside of our Python scripts.  We used the following set of bash commands for each instance to: (1) Source the `.bashrc` file, (2) Create the Anaconda environment `conda_env` using the environment file `environment.yml`, and (3) Start a Jupyter notebook on a specific port that can also be listened to locally.  These instructions are below:
-
-1. Copy and paste this command to ssh into a specific EC2 instance, and if prompted, provide the password you were given:
-
-`ssh -o "StrictHostKeyChecking no" ubuntu@<IP ADDRESS>`
-
-2. Once logged in to the EC2 instance, we can install the conda environment and activate it:
-
-`source ~/.bashrc`
-
-`sudo /home/ubuntu/conda/conda/bin/conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env` (copy this last line with the last).
-
-`conda init bash`
-
-`conda activate conda_env`
-
-3. Next, start a Jupyter notebook remotely and map it to the 8888 port:
-
-`jupyter notebook --port=8888 --no-browser --ip='*' --NotebookApp.token='' --NotebookApp.password='' /home/ubuntu/machine_learning_aws/daily_user`
-
-4. The final step, **on a local (not EC2) machine**, is to map your computer port `5005` and map it to the remote `8888` port on the EC2 machine:
-
- `ssh -NfL 5005:localhost:8888 ubuntu@<IP ADDRESS>`
- 
-5. From here, you can navigate to your `localhost:5005` port on your **local** web browser.  This enables the user to view their remote Jupyter notebook.
-
-## Starting a Jupyter Notebook from a Custom AMI
-If you are using a custom AMI, all of the Anaconda and package installation setup has already been set up on your machine.  All that needs to be done to start a Jupyter notebook from this course is to ssh into your assigned EC2 instance, and then use ssh port forwarding to listen to the remote AWS EC2 port from your local computer.  These instructions are given below:
-
-First, ssh into your assigned EC2 instance:
-
-1. `ssh -o "StrictHostKeyChecking no" ubuntu@<IP ADDRESS>`
-
-Next, open a new terminal ON YOUR LOCAL COMPUTER, and use ssh port forwarding to listen to your Jupyter notebook:
-
-2. `ssh -NfL 5005:localhost:8888 ubuntu@<IP ADDRESS>`
-
-Finally, navigate to your localhost port in your web browser (such as Google chrome):
-
-3. `localhost:5005`
-
-If it is of interest, we set up this simpler pipeline by writing additional commands in our `~/.bashrc` script.  These commands are contained within `bashrc_additions.sh` in this repository.
-
-## AWS Infrastruture Overview
-We used AWS's API to design an `AWSHandler` class through which we set up individual EC2 instances, as well as install Anaconda and a multitude of packages for our students' computing environment.
-
-We use our `AWSHandler` object as our master script in `aws_api.py`.  This handler object contains a variety of different class methods for setting up and maintaining our AWS infrastructure environment.  Some of these methods include: (1) `start_instances()`, (2) `get_instances()`, (3) `wait_for_instances()`, (4) `terminate_instances()`
-(5) `get_user_info()`, (6) `initialize_directories()`, (7) `assign_students_to_machines()`, (8) `prepare_machine_environments()`, (9) `mail_to_list()`.
-
-In turn, these methods make system calls to other startup scripts from this repository, namely: `setup.py`.
 
 ## Credits
-Thank you to the MIT GSL and Amazon AWS teams for providing us with Amazon computing resources for this course.
+Thank you to the MIT GSL and Amazon AWS Educate teams for providing us with Amazon computing resources for this course.
 
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cp -rT /home/ubuntu/machine_learning_aws/template /home/ubuntu/machine_learning_aws/daily_user
+cp -rT /home/ubuntu/machine_learning_aws/instructor_code /home/ubuntu/machine_learning_aws/daily_user
 
 tmux new -d -s jupyter
 tmux send-keys -t jupyter.0 '/bin/bash' ENTER
