@@ -3,9 +3,7 @@ AWSHandler() also makes calls to other relevant scripts in this repository. """
 
 import time
 import os
-import csv
 import re
-import math
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import boto3
@@ -264,7 +262,7 @@ class AWSHandler(object):
         """Update the ip_address and instance_id fields in the self.users dataframe; 1:1 machine to user mapping."""
 
         info_df = pd.DataFrame([(ip_address, instance_id) for instance_id, _, ip_address, _ in self.get_instance_info()])
-        info_df.columns = ['ip_address', 'instafnce_id']
+        info_df.columns = ['ip_address', 'instance_id']
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
@@ -367,21 +365,30 @@ if __name__ == "__main__":
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
+    parser.add_argument('--ami', default='ami-0b0070236dbd64d3c')
     args = parser.parse_args()
 
-    assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
-        'Must select exactly 1 among: start, stop, or backup'
+    handler = AWSHandler(args.path, read=True)
+    # handler.start_instances(1, args.ami)
+    instances = handler.get_instances()
+    new_instances = [instance for instance in instances if instance.image_id=='ami-0b0070236dbd64d3c']
+    instance = new_instances[0]
+    import pdb; pdb.set_trace()
+    pass
 
-    if not args.start:
-        handler = AWSHandler(args.path, read=True)
-    else:
-        handler = AWSHandler(args.path, read=False)
 
-    if args.stop:
-        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
-        handler.terminate_instances()
-    elif args.start:
-        handler.start(args.ami)
-    else:
-        handler.backup_machines()
+    # assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
+    #     'Must select exactly 1 among: start, stop, or backup'
+    #
+    # if not args.start:
+    #     handler = AWSHandler(args.path, read=True)
+    # else:
+    #     handler = AWSHandler(args.path, read=False)
+    #
+    # if args.stop:
+    #     assert input('Are you sure you want to kill all the machines?  ') == 'YES'
+    #     handler.terminate_instances()
+    # elif args.start:
+    #     handler.start(args.ami)
+    # else:
+    #     handler.backup_machines()
