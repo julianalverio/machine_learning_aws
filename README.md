@@ -41,19 +41,15 @@ Unfortunately, Python does not support sourcing `.bashrc` files, so this sourcin
 ## Starting a Jupyter Notebook from a Custom AMI
 If you are using a custom AMI, all of the Anaconda and package installation setup has already been set up on your machine.  All that needs to be done to start a Jupyter notebook from this course is to ssh into your assigned EC2 instance, and then use ssh port forwarding to listen to the remote AWS EC2 port from your local computer.  These instructions are given below:
 
-First, ssh into your assigned EC2 instance:
+First, use port forwarding (your instance should already have an active Jupyter notebook session):
 
-1. `ssh -o "StrictHostKeyChecking no" ubuntu@<IP ADDRESS>`
+1. `ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP ADDRESS>`
 
-Next, open a new terminal ON YOUR LOCAL COMPUTER, and use ssh port forwarding to listen to your Jupyter notebook:
+Next, navigate to your localhost port in your web browser (such as Google chrome):
 
-2. `ssh -NfL 5005:localhost:8888 ubuntu@<IP ADDRESS>`
+2. `localhost:5005`
 
-Finally, navigate to your localhost port in your web browser (such as Google chrome):
-
-3. `localhost:5005`
-
-If it is of interest, we set up this simpler pipeline by writing additional commands in our `~/.bashrc` script.  These commands are contained within `bashrc_additions.sh` in this repository.
+If it is of interest, we set up this simpler pipeline by writing additional commands in our `~/.bashrc` and `bash init` scripts, such as remotely starting a tmux session for our Jupyter notebook in our anaconda environment and then detaching.  These commands are contained within `bashrc_additions.sh` in this repository.
 
 ## AWS Infrastruture Overview
 We used AWS's API to design an `AWSHandler` class through which we set up individual EC2 instances, as well as install Anaconda and a multitude of packages for our students' computing environment.
@@ -61,7 +57,7 @@ We used AWS's API to design an `AWSHandler` class through which we set up indivi
 We use our `AWSHandler` object as our master script in `aws_api.py`.  This handler object contains a variety of different class methods for setting up and maintaining our AWS infrastructure environment.  Some of these methods include: (1) `start_instances()`, (2) `get_instances()`, (3) `wait_for_instances()`, (4) `terminate_instances()`
 (5) `get_user_info()`, (6) `initialize_directories()`, (7) `assign_students_to_machines()`, (8) `prepare_machine_environments()`, (9) `mail_to_list()`.
 
-In turn, these methods make system calls to other startup scripts from this repository, namely: `setup.py`.
+In turn, these methods make system calls to other startup scripts from this repository, namely: `setup.py` and `setup.sh`.
 
 ## Credits
 Thank you to the MIT GSL and Amazon AWS teams for providing us with Amazon computing resources for this course.
