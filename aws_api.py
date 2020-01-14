@@ -336,6 +336,12 @@ class AWSHandler(object):
         self.mail_to_list()
         print('Done starting up.')
 
+    def start_single_instance(self, ami)
+        self.start_instances(count=1, instance_type='t3a.xlarge', ami=ami)
+        self.prepare_machines()
+        self.mail_to_list()
+        print('Done starting up.')
+
     def scp_data_to_instances(self):
         """Class method for scp of data to instances."""
         instances_info = self.get_instance_info()
@@ -350,10 +356,7 @@ class AWSHandler(object):
 
 
 
-if __name__ == "__main__":
-    handler = AWSHandler('users.csv')
-    handler.scp_data_to_instances()
-    """
+if __name__ == "__main__":)
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
@@ -376,4 +379,3 @@ if __name__ == "__main__":
         handler.start(args.ami)
     else:
         handler.backup_machines()
-    """
