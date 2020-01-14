@@ -336,7 +336,7 @@ class AWSHandler(object):
         self.mail_to_list()
         print('Done starting up.')
 
-    def start_single_instance(self, ami)
+    def start_single_instance(self, ami):
         self.start_instances(count=1, instance_type='t3a.xlarge', ami=ami)
         self.prepare_machines()
         self.mail_to_list()
@@ -354,14 +354,23 @@ class AWSHandler(object):
             os.system(scp_command)
         print("Data finished sending!")
 
+    def make_github_pull(self):
+        instances_info = self.get_instance_info()
+        for instance in instances_info:
+            ip_address = instance[2]
+            first_cmd = "cd machine_learning_aws | git pull"
+            first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ' \
+                        'ubuntu@%s %s' % (ip_address, first_cmd)
+            os.system(first_ssh)
+            print("Finished pull for IP address %s" % (ip_address))
 
 
-if __name__ == "__main__":)
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
-    parser.add_argument('--path', default='users.csv')
+    parser.add_argument('--path', default='users_debug.csv')
     parser.add_argument('--ami', default='ami-096943a0c2f422bd7')
     args = parser.parse_args()
     assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
@@ -376,6 +385,7 @@ if __name__ == "__main__":)
         assert input('Are you sure you want to kill all the machines?  ') == 'YES'
         handler.terminate_instances()
     elif args.start:
-        handler.start(args.ami)
+        handler.start_instances(args.ami)
     else:
         handler.backup_machines()
+

@@ -12,6 +12,7 @@ hosts.txt
 *.hdf5
 *.h*
 *instance_IDs.txt
+*users_debug.csv
 
 
 # pycharm
