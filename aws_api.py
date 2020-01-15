@@ -284,23 +284,19 @@ class AWSHandler(object):
         assigned_machines = self.users[self.users['name'].notnull()]
 
         # save the dirs to machine_learning_aws/studient_copies
-        root_save_dir = os.path.join(os.getcwd(), 'student_copies')
+        root_save_dir = os.path.join(os.getcwd(), 'student_code')
 
         # Pem file
         credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
-        import pdb; pdb.set_trace()
 
         for _, row in assigned_machines.iterrows():
             idx, name, email, username, ip_address, instance_id = row
             local_save_dir = os.path.join(root_save_dir, username)
-            scp_command = 'scp -i %s -o "StrictHostKeyChecking no" -r ' \
+            scp_command = 'scp -r -i %s -o "StrictHostKeyChecking no" -r ' \
                           'ubuntu@%s:/home/ubuntu/machine_learning_aws' \
                           '/daily_user/  %s' % (
                               credential_path, ip_address, local_save_dir)
             os.system(scp_command)
-        # os.system('git add .')
-        # os.system('git commit -m "Daily student backup"')
-        # os.system('git push')
 
     def start_instances(self, count, ami, instance_type='t3a.xlarge'):
         """Spin up n new EC2 instances from scratch, then hang until they're 'running'"""
@@ -369,12 +365,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     handler = AWSHandler(args.path, read=True)
+    handler.backup_machines()
     # handler.start_instances(1, 'ami-070c7708cd39b7408')
-    instances = handler.get_instances()
-    new_instances = [instance for instance in instances if instance.image_id=='ami-070c7708cd39b7408']
-    instance = new_instances[0]
-    import pdb; pdb.set_trace()
-    pass
+    # instances = handler.get_instances()
+    # new_instances = [instance for instance in instances if instance.image_id=='ami-070c7708cd39b7408']
+    # instance = new_instances[0]
+    # import pdb; pdb.set_trace()
+    # pass
 
 
     # assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
