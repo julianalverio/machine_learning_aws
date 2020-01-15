@@ -225,7 +225,8 @@ class AWSHandler(object):
                copy and paste the following commands into
                your command line.
                Windows users: paste the following commands
-               into Git Bash.
+               into Git Bash, and please remember to RESTART or SHUT DOWN 
+               your computer before coming to class.
 
                1. Set up ssh port forwarding:
                ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@%s
@@ -255,8 +256,9 @@ class AWSHandler(object):
                GSL Uruguay Technical Team
                """ % (user, ip_address)
 
-
+            # Send email!
             self.send_email(email, body)
+
         print('Done sending emails.')
 
     def map_machine_info(self):
