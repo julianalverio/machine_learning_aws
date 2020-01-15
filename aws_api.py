@@ -365,13 +365,13 @@ if __name__ == "__main__":
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-0bee6bc333a56960d')
+    parser.add_argument('--ami', default='ami-070c7708cd39b7408')
     args = parser.parse_args()
 
     handler = AWSHandler(args.path, read=True)
-    # handler.start_instances(1, 'ami-0bee6bc333a56960d')
+    # handler.start_instances(1, 'ami-070c7708cd39b7408')
     instances = handler.get_instances()
-    new_instances = [instance for instance in instances if instance.image_id=='ami-0bee6bc333a56960d']
+    new_instances = [instance for instance in instances if instance.image_id=='ami-070c7708cd39b7408']
     instance = new_instances[0]
     import pdb; pdb.set_trace()
     pass

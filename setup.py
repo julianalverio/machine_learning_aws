@@ -12,10 +12,10 @@ def create_password_text_file(password):
 
 
 def run_setup():
-    """This gets called in the EC2 instance so we can change the password."""
+    """This gets called in the EC2 instance so we can change the password and git pull"""
 
-    create_password_text_file('pantalones')
     os.system('git -C /home/ubuntu/machine_learning_aws pull')
+    create_password_text_file('pantalones')
     os.system('cat /home/ubuntu/set_password.txt | sudo passwd ubuntu')
     os.system('sudo service sshd restart')
 
