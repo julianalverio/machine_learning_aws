@@ -1,0 +1,19 @@
+## Paste the shit out of this into a clean ubuntu AMI (ami-00a208c7cdba991ea). It won't let you down.
+
+
+
+
+git clone https://github.com/julianalverio/machine_learning_aws
+sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b
+/home/ubuntu/conda/bin/conda init
+source ~/.bashrc
+cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc
+conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
+
+echo "@reboot sudo -i -u ubuntu git -C /home/ubuntu/machine_learning_aws pull && . /home/ubuntu/machine_learning_aws/setup.sh" >> /home/ubuntu/mycron
+crontab /home/ubuntu/mycron
+rm mycron
+
+
+cat /etc/ssh/sshd_config | sed 's/PasswordAuthentication no/PasswordAuthentication yes/' > ~/sshd_config && chmod 644 ~/sshd_config && sudo mv ~/sshd_config /etc/ssh/sshd_config
+
