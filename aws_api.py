@@ -256,7 +256,7 @@ class AWSHandler(object):
                """ % (user, ip_address)
 
 
-            # self.send_email(email, body)
+            self.send_email(email, body)
         print('Done sending emails.')
 
     def map_machine_info(self):
@@ -344,7 +344,7 @@ if __name__ == "__main__":
         handler = AWSHandler(args.path, read=False)
 
     if args.stop:
-        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
+        assert input('Are you sure you want to kill all the machines? :( ') == 'YES'
         handler.terminate_instances()
     elif args.start:
         handler.start(args.ami)
