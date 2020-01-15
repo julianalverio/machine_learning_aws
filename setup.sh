@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git -C /home/ubuntu/machine_learning_aws pull
+
 cp -rT /home/ubuntu/machine_learning_aws/instructor_code /home/ubuntu/machine_learning_aws/daily_user
 
 tmux new -d -s jupyter
