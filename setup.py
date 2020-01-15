@@ -12,7 +12,7 @@ def create_password_text_file(password):
 
 
 def run_setup():
-    """This gets called in the EC2 instance so we can change the password and git pull"""
+    """This gets called in the EC2 instance so we can change the password."""
 
     create_password_text_file('pantalones')
     os.system('cat /home/ubuntu/set_password.txt | sudo passwd ubuntu')

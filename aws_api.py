@@ -210,6 +210,7 @@ class AWSHandler(object):
         num_users = self.users.shape[0]
         for idx, (user, email, username, ip_address, instance_id) in self.users.iterrows():
             if not isinstance(user, str):
+                print('I encountered an invalid user! Skipping.')
                 continue
             print('Sending email %s out of %s' % ((idx + 1), num_users))
 
@@ -255,7 +256,7 @@ class AWSHandler(object):
                """ % (user, ip_address)
 
 
-            self.send_email(email, body)
+            # self.send_email(email, body)
         print('Done sending emails.')
 
     def map_machine_info(self):
@@ -274,8 +275,6 @@ class AWSHandler(object):
             first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
             os.system(first_ssh)
 
-
-    # TODO
     def backup_machines(self):
         """Back up student-populated content from the
         course to GitHub in the 'daily_user' sub-directory.
@@ -325,34 +324,6 @@ class AWSHandler(object):
         self.mail_to_list()
         print('Done starting up.')
 
-    def start_single_instance(self, ami):
-        self.start_instances(count=1, instance_type='t3a.xlarge', ami=ami)
-        self.prepare_machines()
-        self.mail_to_list()
-        print('Done starting up.')
-
-    def scp_data_to_instances(self):
-        """Class method for scp of data to instances."""
-        instances_info = self.get_instance_info()
-        for instance in instances_info:
-            ip_address = instance[2]
-            print("IP address is %s" % (ip_address))
-            scp_command = "scp ../glove.6B.50d.txt " \
-                          "ubuntu@%s:/home/ubuntu/machine_learning_aws/data" \
-                          "/glove.6B.50d.txt" % (ip_address)
-            os.system(scp_command)
-        print("Data finished sending!")
-
-    def make_github_pull(self):
-        instances_info = self.get_instance_info()
-        for instance in instances_info:
-            ip_address = instance[2]
-            first_cmd = "cd machine_learning_aws | git pull"
-            first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ' \
-                        'ubuntu@%s %s' % (ip_address, first_cmd)
-            os.system(first_ssh)
-            print("Finished pull for IP address %s" % (ip_address))
-
 
 if __name__ == "__main__":
     handler = AWSHandler("users.csv", read=True)
@@ -361,31 +332,21 @@ if __name__ == "__main__":
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-070c7708cd39b7408')
+    parser.add_argument('--ami', default='ami-0152fa7b82dfc632b')
     args = parser.parse_args()
 
-    handler = AWSHandler(args.path, read=True)
-    handler.backup_machines()
-    # handler.start_instances(1, 'ami-070c7708cd39b7408')
-    # instances = handler.get_instances()
-    # new_instances = [instance for instance in instances if instance.image_id=='ami-070c7708cd39b7408']
-    # instance = new_instances[0]
-    # import pdb; pdb.set_trace()
-    # pass
+    assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
+        'Must select exactly 1 among: start, stop, or backup'
 
+    if not args.start:
+        handler = AWSHandler(args.path, read=True)
+    else:
+        handler = AWSHandler(args.path, read=False)
 
-    # assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
-    #     'Must select exactly 1 among: start, stop, or backup'
-    #
-    # if not args.start:
-    #     handler = AWSHandler(args.path, read=True)
-    # else:
-    #     handler = AWSHandler(args.path, read=False)
-    #
-    # if args.stop:
-    #     assert input('Are you sure you want to kill all the machines?  ') == 'YES'
-    #     handler.terminate_instances()
-    # elif args.start:
-    #     handler.start(args.ami)
-    # else:
-    #     handler.backup_machines()
+    if args.stop:
+        assert input('Are you sure you want to kill all the machines?  ') == 'YES'
+        handler.terminate_instances()
+    elif args.start:
+        handler.start(args.ami)
+    else:
+        handler.backup_machines()
