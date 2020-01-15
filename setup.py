@@ -15,8 +15,7 @@ def run_setup():
     """This gets called in the EC2 instance so we can change the password."""
 
     create_password_text_file('pantalones')
-    os.chdir('/home/ubuntu/machine_learning_aws')
-    os.system('git pull')
+    os.system('git -C /home/ubuntu/machine_learning_aws pull')
     os.system('cat /home/ubuntu/set_password.txt | sudo passwd ubuntu')
     os.system('sudo service sshd restart')
 
