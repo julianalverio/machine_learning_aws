@@ -221,6 +221,7 @@ class AWSHandler(object):
                Below is your login information for today.
                Today's password: pantalones
 
+               Windows users: please be sure to restart your computer every day before class.
                Mac users and users running Linux: Please
                copy and paste the following commands into
                your command line.
@@ -232,22 +233,17 @@ class AWSHandler(object):
                ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@%s
                Then type the password.
 
-               If this did not return an error, go to step 2.
                If you get an error that says something like:
                bind [127.0.0.1]:5005: Address already in use
-
-               Windows users, run this:
-               kill $(lsof -t -i :5005)
-               Then retry step 1.
 
                Mac and Linux users, run this:
                pkill -f 5005
                Then retry step 1
-
+               
                2. Go to your web browser (such
                as Chrome) and type:
                localhost:5005
-
+               
                This will take you to your AWS Jupyter
                notebooks! If this worked for you, you're all set!
 
