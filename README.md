@@ -14,9 +14,56 @@ One of the primary purposes of this repository is to maintain a persistent state
 
 
 ## Installing and Configuring Conda Environment on EC2 Instances: Ubuntu AMI
-Our daily login/setup instructions are still changing, as we are still developing this code to make it simpler to use and more reliable.
-We will post instructions shortly on how to log in to the EC2 instances, and how to set up your environment on your own computer.
+We designed the login and student setup process for these machines to be as straightforward and efficient as possible.  Upon startup of the EC2 instances (when the instances are initialized), a `tmux` session is opened, the conda environment `conda_env` is activated, a `jupyter notebook` command with port assignment is set up, and then the `tmux` session automatically detaches.  This ensures that the Jupyter notebook will continue to run remotely even if there is a loss in ssh connection.
 
+Therefore, the only steps that need to be taken for login are the following (students receive these via email whenever new instances are created):
+
+1. ssh port forwarding (to listen to the remote EC2 Jupyter notebook):
+
+`ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP_ADDRESS>`
+
+2. In your web browser (e.g. Google Chrome, Safari, Internet Explorer), go to the following:
+
+`localhost:5005`
+
+You should now be able to see the Jupyter notebook interface!  Changes made here are made on the remote EC2 instance, but our team has also built-in functionality in `aws_api.py backup_machines()` for backing up all student work to this GitHub repository, and if/when students are assigned to new instances, work from their user-specific folders is automatically downloaded onto their new assigned EC2 instances.
+
+**NOTE**: If step 1 does not work because "port 5005 is already in use", try killing the port:
+
+a. Mac/Linux users: Type the command `pkill -f 5005`, and repeat step 1.
+
+b. Windows users: Restart/reboot your computer.
+
+## Installing and Configuring Conda Environment on Local Machines:
+To provide our students with local access and practice to the machine learning resources/concepts taught in this course, we have also created a framework for our students to work on this code in their own Anaconda environments.  Our team created a distributable Anaconda environment that contains all the necessary Python packages needed for this course called `local_environment.yml`, which can be accessed through this repository.  Users can set up this conda environment and add it to their Jupyter notebook through the following steps:
+
+1. After downloading Anaconda, open an Anaconda prompt (Windows) or a command line (Max/Linux), and change your working directory to the local version of this repository.  From here, follow the OS-agnostic commands below:
+
+2. Create the Anaconda environment in the command line:
+
+`conda create -f local_environment.yml -n local_env`
+
+3. Activate the conda environment:
+
+`conda activate local_env`
+
+4. Install other packages the user may want to have in this Anaconda environment:
+
+`conda install <package_name>` OR `pip install <package_name>` OR `pip3 install <package_name>`
+
+5. In order for users to use the packages in their local environment in a local Jupyter notebook, add the kernel for this environment to `ipython`:
+
+`pip install ipython` 
+
+`ipython kernel install --name local_env --user`
+
+6. Next, open a Jupyter notebook:
+
+`jupyter notebook`
+
+Select any `.ipynb` file, and open it.  Once the notebook is loaded, find the top menu bar, scroll over "kernel".  Find "Change kernel" at the bottom, and the user should then be able to see and select "local_env".  Click on "local_env"; the user's packages from `local_env` should now be import-compatible.
+
+From here, the user can edit/create/delete files in Jupyter.  For future login and use of this Anaconda environment, the user will simply need to open a Jupyter notebook and ensure that the kernel `local_env` is selected.
 
 ## Credits
 Thank you to the MIT GSL and Amazon AWS Educate teams for providing us with Amazon computing resources for this course.
