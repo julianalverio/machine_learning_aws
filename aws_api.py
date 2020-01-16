@@ -252,11 +252,14 @@ class AWSHandler(object):
         credential_path = os.path.join(os.getcwd(), 'ec2-keypair.pem')
 
         for _, row in assigned_machines.iterrows():
+            print(row)
             idx, name, email, username, ip_address, instance_id = row
             local_save_dir = os.path.join(root_save_dir, username)
+            print("Local save dir %s " % (local_save_dir))
+            print("ID address % s" % (ip_address))
             scp_command = 'scp -r -i %s -o "StrictHostKeyChecking no" -r ' \
                           'ubuntu@%s:/home/ubuntu/machine_learning_aws' \
-                          '/daily_user/  %s' % (
+                          '/daily_user/*  %s' % (
                               credential_path, ip_address, local_save_dir)
             os.system(scp_command)
 
@@ -294,6 +297,7 @@ if __name__ == "__main__":
     parser.add_argument('--start', action='store_true')
     parser.add_argument('--backup', action='store_true')
     parser.add_argument('--stop', action='store_true')
+    parser.add_argument('--info', action='store_true')
     parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-0152fa7b82dfc632b')
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
@@ -301,6 +305,9 @@ if __name__ == "__main__":
 
     assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
         'Must select exactly 1 among: start, stop, or backup'
+
+    if args.info:
+        handler.get_new_handler_file()
 
     if not args.start:
         handler = AWSHandler(args.path, read=True)
@@ -314,3 +321,5 @@ if __name__ == "__main__":
         handler.start(ami=args.ami, instance_type=args.type)
     else:
         handler.backup_machines()
+
+
