@@ -33,7 +33,6 @@ class AWSHandler(object):
     instances, retrieving instance and user information, and sending emails
     to users for information on their assigned AWS instances.
     """
-    # TODO: better saving so multiple runs don't overwrite each other
     def __init__(self, path, read=False):
         if not read:
             full_path = os.path.join(os.getcwd(), path)
@@ -58,40 +57,6 @@ class AWSHandler(object):
         with open('ec2-keypair.pem', 'w+') as f:
             f.write(KeyPairOut)
         print("Keypair written")
-
-    # def restart_instances(self):
-    #     """Function for restarting instances that have been stopped, but not
-    #     terminated.  This function is typically used if we want to restart
-    #     instances that have had Anaconda environments already installed on
-    #     them (i.e. maintain an offline, persistent state).
-    #     """
-    #
-    #     ec2 = boto3.resource('ec2', region_name="us-east-1")
-    #     print("AMI is: {}, instance type is: {}".format(ami, instance_type))
-    #     instances = self.get_instances()
-    #
-    #     # Now iterate through instances and append ID to list of IDs
-    #     with open("instance_IDs.txt", "r") as instance_IDs:
-    #         instance_IDs.read()
-    #         instance_IDs.close()
-    #
-    #     # Now restart all instances at once
-    #     try:  # Try to restart the instance
-    #         instances = ec2.reboot_instances(InstanceIds=instance_ids,
-    #                                          DryRun=True)
-    #
-    #     except ClientError as e:  # In case we cannot restart instances
-    #         if 'DryRunOperation' not in str(e):
-    #             print("You don't have permission to reboot instances.")
-    #             raise
-    #
-    #     print("Stopped instances have been restarted \n Instance names:")
-    #     # Print all the instance names
-    #     for instance in instances:
-    #         print(instance.instance_id)
-    #
-    #     # After creating instances, hang
-    #     self.wait_for_instances(['running', 'terminated', 'shutting-down'])
 
     def get_instance_info(self):
         """Retrieve instance-related information using
@@ -316,8 +281,8 @@ class AWSHandler(object):
         time.sleep(60)
         self.map_machine_info()
 
-    def start(self, ami):
-        self.start_instances(count=self.users.shape[0], instance_type='t3a.xlarge', ami=ami)
+    def start(self, ami, instance_type):
+        self.start_instances(count=self.users.shape[0], instance_type=instance_type, ami=ami)
         self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
@@ -331,6 +296,7 @@ if __name__ == "__main__":
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-0152fa7b82dfc632b')
+    parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
 
     assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
@@ -345,6 +311,6 @@ if __name__ == "__main__":
         assert input('Are you sure you want to kill all the machines? :( ') == 'YES'
         handler.terminate_instances()
     elif args.start:
-        handler.start(args.ami)
+        handler.start(ami=args.ami, instance_type=args.type)
     else:
         handler.backup_machines()
