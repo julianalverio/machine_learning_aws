@@ -276,7 +276,7 @@ class AWSHandler(object):
 
     def start(self, ami, instance_type):
         self.start_instances(count=self.users.shape[0], instance_type=instance_type, ami=ami)
-        self.prepare_machines()
+        # self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
 

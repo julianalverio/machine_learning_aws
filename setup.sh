@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo -e 'pantalones\npantalones\n' | sudo passwd ubuntu
+sudo service sshd restart
+
 git -C /home/ubuntu/machine_learning_aws pull
 
 cp -rT /home/ubuntu/machine_learning_aws/instructor_code /home/ubuntu/machine_learning_aws/daily_user
