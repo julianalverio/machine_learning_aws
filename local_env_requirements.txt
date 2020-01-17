@@ -2,7 +2,7 @@ numpy
 scipy
 scikit-learn
 keras
-tensorflow==1.14
+tensorflow==1.15.0
 nltk
 joblib
 opencv
