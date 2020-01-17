@@ -55,6 +55,8 @@ To provide our students with local access and practice to the machine learning r
 
 `pip install ipython` 
 
+`pip install ipykernel`
+
 `ipython kernel install --name local_env --user`
 
 6. Next, open a Jupyter notebook:
