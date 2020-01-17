@@ -41,7 +41,7 @@ To provide our students with local access and practice to the machine learning r
 
 2. Create the Anaconda environment in the command line:
 
-`conda env create -f local_environment.yml -n local_env`
+`conda env create -f local_env_requirements.txt -n local_env python=3.7`
 
 3. Activate the conda environment:
 
