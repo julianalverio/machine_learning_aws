@@ -220,13 +220,13 @@ class AWSHandler(object):
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
-    def prepare_machines(self):
-        num_machines = self.users.shape[0]
-        for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
-            print('Now preparing machine %s of %s' % (idx + 1, num_machines))
-            first_cmd = "python3 /home/ubuntu/machine_learning_aws/setup.py"
-            first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
-            os.system(first_ssh)
+    # def prepare_machines(self):
+    #     num_machines = self.users.shape[0]
+    #     for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
+    #         print('Now preparing machine %s of %s' % (idx + 1, num_machines))
+    #         first_cmd = "python3 /home/ubuntu/machine_learning_aws/setup.py"
+    #         first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
+    #         os.system(first_ssh)
 
     def backup_machines(self):
         """Back up student-populated content from the

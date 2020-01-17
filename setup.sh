@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# do this twice, it's unclear which will work
 echo -e 'pantalones\npantalones\n' | sudo passwd ubuntu
 sudo service sshd restart
 
