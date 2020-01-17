@@ -53,11 +53,13 @@ To provide our students with local access and practice to the machine learning r
 
 5. In order for users to use the packages in their local environment in a local Jupyter notebook, add the kernel for this environment to `ipython`:
 
-`pip install ipython` 
+`ipython kernel install --name local_env --user`
+
+The user should already have the packages `ipykernel` and `ipython` installed, but in case running the above command creates errors, make sure these packages are installed via pip:
 
 `pip install ipykernel`
 
-`ipython kernel install --name local_env --user`
+`pip install ipython`
 
 6. Next, open a Jupyter notebook:
 
