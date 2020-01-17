@@ -2,7 +2,7 @@ numpy
 scipy
 scikit-learn
 keras
-tensorflow
+tensorflow==1.14
 nltk
 joblib
 opencv
@@ -10,4 +10,7 @@ matplotlib
 h5py
 pandas
 pathlib
+gensim
+ipykernel
+ipython
 

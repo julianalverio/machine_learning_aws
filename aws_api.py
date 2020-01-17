@@ -220,6 +220,36 @@ class AWSHandler(object):
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
+    def intelligent_overwrite(self):
+        """Helper function for backing up the machines - can be configured so as
+        to ensure that user's content is only overwritten in an intelligent
+        way."""
+        root_path = os.path.join(os.getcwd(), "student_code")
+        users = os.listdir(root_path)
+
+        # Iterate through users
+        for user in users:
+            daily_user = os.path.join(root_path, user, "daily_user")
+            try:
+                files = os.listdir(daily_user)
+            except:
+                print("Daily User path not found")
+                files = []
+            # Iterate through files
+            for file in files:
+                print(os.path.isdir(os.path.join(daily_user, file)))
+                if os.path.isdir(os.path.join(daily_user, file)) and \
+                        not file.startswith("."):
+                    # Change dir, copy contents, change dir
+                    os.chdir(daily_user)
+                    cp_command = "cp -r %s ../" % (file)
+                    os.system(cp_command)
+                    os.chdir(root_path)
+            # Remove daily user
+            remove_command = "rm -r %s" % (daily_user)
+            os.system(remove_command)
+        print("Overwrite finished!")
+
     def backup_machines(self):
         """Back up student-populated content from the
         course to GitHub in the 'daily_user' sub-directory.
@@ -241,9 +271,13 @@ class AWSHandler(object):
             print("ID address % s" % (ip_address))
             scp_command = 'scp -r -i %s -o "StrictHostKeyChecking no" -r ' \
                           'ubuntu@%s:/home/ubuntu/machine_learning_aws' \
-                          '/daily_user/*  %s' % (
+                          '/daily_user/  %s' % (
                               credential_path, ip_address, local_save_dir)
             os.system(scp_command)
+
+            # Now overwrite in an intelligent way - may need to be customized
+            self.intelligent_overwrite()
+
 
     def start_instances(self, count, ami, instance_type='t3a.xlarge'):
         """Spin up n new EC2 instances from scratch, then hang until they're 'running'"""
@@ -284,11 +318,12 @@ if __name__ == "__main__":
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
 
-    assert sum([int(args.start), int(args.stop), int(args.backup)]) == 1, \
-        'Must select exactly 1 among: start, stop, or backup'
+    assert sum([int(args.start), int(args.stop),
+                int(args.backup), int(args.info)]) == 1, \
+        'Must select exactly 1 among: start, stop, backup, or info'
 
     if args.info:
-        handler.get_new_handler_file()
+        handler.map_machine_info()
 
     if not args.start:
         handler = AWSHandler(args.path, read=True)
