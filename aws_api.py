@@ -220,14 +220,6 @@ class AWSHandler(object):
         self.users = pd.concat([self.users, info_df], axis=1)
         self.users.to_csv('handler_state.csv')
 
-    # def prepare_machines(self):
-    #     num_machines = self.users.shape[0]
-    #     for idx, (name, email, username, ip_address, instance_id) in self.users.iterrows():
-    #         print('Now preparing machine %s of %s' % (idx + 1, num_machines))
-    #         first_cmd = "python3 /home/ubuntu/machine_learning_aws/setup.py"
-    #         first_ssh = 'ssh -i ec2-keypair.pem -o "StrictHostKeyChecking no" ubuntu@%s %s' % (ip_address, first_cmd)
-    #         os.system(first_ssh)
-
     def backup_machines(self):
         """Back up student-populated content from the
         course to GitHub in the 'daily_user' sub-directory.
@@ -276,7 +268,6 @@ class AWSHandler(object):
 
     def start(self, ami, instance_type):
         self.start_instances(count=self.users.shape[0], instance_type=instance_type, ami=ami)
-        # self.prepare_machines()
         self.mail_to_list()
         print('Done starting up.')
 
@@ -289,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--info', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-0152fa7b82dfc632b')
+    parser.add_argument('--ami', default='ami-0d7d4583b4e679081')
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
 
