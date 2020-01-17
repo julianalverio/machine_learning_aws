@@ -1,0 +1,13 @@
+numpy 
+scipy
+scikit-learn
+keras
+tensorflow
+nltk
+joblib
+opencv
+matplotlib
+h5py
+pandas
+pathlib
+
