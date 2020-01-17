@@ -204,7 +204,7 @@ class AWSHandler(object):
             msg = MIMEMultipart()
             msg['From'] = 'machinelearning.uruguay@gmail.com'
             msg['To'] = email
-            msg['Subject'] = "Daily Login Instructions"
+            msg['Subject'] = "Updated Login Instructions"
             msg.attach(MIMEText(body, 'plain'))
             text = msg.as_string()
             server.sendmail('machinelearning.uruguay@gmail.com', email, text)
