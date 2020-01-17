@@ -149,28 +149,35 @@ class AWSHandler(object):
         # Hang until the instances are ready.
         self.wait_for_instances(['stopping', 'stopped', 'terminated'])
 
-    def send_email(self, to_addr, body):
-        """Send an email from our super secure address. """
+    # def send_email(self, to_addr, body):
+    #     """Send an email from our super secure address. """
+    #
+    #     # Message information
+    #     fromaddr = "machinelearning.uruguay@gmail.com"
+    #     msg = MIMEMultipart()
+    #     msg['From'] = fromaddr
+    #     msg['To'] = to_addr
+    #     msg['Subject'] = "Daily Login Instructions"
+    #
+    #     msg.attach(MIMEText(body, 'plain'))
+    #     server = smtplib.SMTP('smtp.gmail.com', 587)
+    #     server.ehlo()
+    #     server.starttls()
+    #     server.ehlo()
+    #     server.login(fromaddr, "support_vector_machine")
+    #     text = msg.as_string()
+    #     server.sendmail(fromaddr, to_addr, text)
+    #     server.quit()
 
-        # Message information
-        fromaddr = "machinelearning.uruguay@gmail.com"
-        msg = MIMEMultipart()
-        msg['From'] = fromaddr
-        msg['To'] = to_addr
-        msg['Subject'] = "Notebook Modification!"
+    def mail_to_list(self):
+        """Send an email to everyone in the provided csv."""
 
-        msg.attach(MIMEText(body, 'plain'))
+
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.ehlo()
         server.starttls()
         server.ehlo()
-        server.login(fromaddr, "support_vector_machine")
-        text = msg.as_string()
-        server.sendmail(fromaddr, to_addr, text)
-        server.quit()
-
-    def mail_to_list(self):
-        """Send an email to everyone in the provided csv."""
+        server.login('machinelearning.uruguay@gmail.com', "support_vector_machine")
 
         num_users = self.users.shape[0]
         for idx, (user, email, username, ip_address, instance_id) in self.users.iterrows():
@@ -218,7 +225,16 @@ class AWSHandler(object):
                """ % (user, ip_address)
 
             # Send email!
-            self.send_email(email, body)
+            # self.send_email(email, body)
+
+            msg = MIMEMultipart()
+            msg['From'] = 'machinelearning.uruguay@gmail.com'
+            msg['To'] = email
+            msg['Subject'] = "Daily Login Instructions"
+            msg.attach(MIMEText(body, 'plain'))
+            text = msg.as_string()
+            server.sendmail('machinelearning.uruguay@gmail.com', email, text)
+            print('sending email %s out of %s' % (idx, num_users))
 
         print('Done sending emails.')
 
