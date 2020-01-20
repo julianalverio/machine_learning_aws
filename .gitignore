@@ -25,3 +25,5 @@ data/
 
 # Random
 *.~lock*
+
+student_code/*
