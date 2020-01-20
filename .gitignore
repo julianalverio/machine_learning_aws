@@ -27,3 +27,6 @@ data/
 *.~lock*
 
 student_code/*
+
+# No pickle files
+*.pkl
