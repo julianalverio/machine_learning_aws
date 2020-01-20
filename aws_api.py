@@ -318,6 +318,10 @@ if __name__ == "__main__":
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
 
+    handler = AWSHandler(args.path, read=False)
+    handler.start_instances(1, args.ami)
+    import pdb; pdb.set_trace()
+
     assert sum([int(args.start), int(args.stop),
                 int(args.backup), int(args.info)]) == 1, \
         'Must select exactly 1 among: start, stop, backup, or info'

@@ -10,6 +10,7 @@ sudo service sshd restart
 # Pull repo upon startup
 git -C /home/ubuntu/machine_learning_aws pull
 
+
 # Move code from template to daily_user
 cp -rT /home/ubuntu/machine_learning_aws/instructor_code /home/ubuntu/machine_learning_aws/daily_user
 
