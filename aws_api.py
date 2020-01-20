@@ -314,13 +314,9 @@ if __name__ == "__main__":
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--info', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-0d7d4583b4e679081')
+    parser.add_argument('--ami', default='ami-05dbd93d080c19f6d')
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
-
-    handler = AWSHandler(args.path, read=False)
-    handler.start_instances(1, args.ami)
-    import pdb; pdb.set_trace()
 
     assert sum([int(args.start), int(args.stop),
                 int(args.backup), int(args.info)]) == 1, \
