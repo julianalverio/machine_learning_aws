@@ -314,7 +314,7 @@ if __name__ == "__main__":
     parser.add_argument('--stop', action='store_true')
     parser.add_argument('--info', action='store_true')
     parser.add_argument('--path', default='users.csv')
-    parser.add_argument('--ami', default='ami-05dbd93d080c19f6d')
+    parser.add_argument('--ami', default='ami-0a1441e28a9efae69')
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
     args = parser.parse_args()
 
@@ -337,5 +337,3 @@ if __name__ == "__main__":
         handler.start(ami=args.ami, instance_type=args.type)
     else:
         handler.backup_machines()
-
-

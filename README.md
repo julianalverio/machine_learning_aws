@@ -72,6 +72,20 @@ From here, the user can edit/create/delete files in Jupyter.  For future login a
 ## Credits
 Thank you to the MIT GSL and Amazon AWS Educate teams for providing us with Amazon computing resources for this course.
 
+## Tips for setting up machines like these on another AWS account
+1. Load AWS credits onto someone's account
+2. Generate a .pem key. Keep this VERY secure and NEVER push this to github. Automated scrapers will steal your key and spent your money.
+3. Start up an ubuntu AMI (ami-00a208c7cdba991ea)
+4. Look up its ip address on the EC2 console. ssh into the machine using ssh -i /path/to/pem ubuntu@ip_address
+5. Paste the commands from make_ami.txt. See make_ami.txt to see what each line does. It will: clone the repo, install conda and initialize, build a conda env, set a cronjob to run at boot time, and allow for ssh-ing with passwords.
+6. You don't have to do anything for this step. At boot time, setup.sh will run. It will set the password, pull the latest version of the repo, and set up a jupyter notebook server. To interact with the jupyter notebook, set up port forwarding as follow: ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP_ADDRESS>  
+7. Once all of this is set up you can go to the EC2 console, select your instance, click  action --> images -->  create image. Follow the prompts so  create a new  AMI. You can now  start up  a machine that will be identical to the one from before.  Any datasets you loaded onto the machine to start will also be copies to subsequent  copies.  
+
+#### Security
+This whole process is very insecure, and is only usable for teaching purposes. DO NOT use this for anything intellectual property sensitive.
+1. The way we set it up, the jupyter notebooks are unencrypted and do not require a password. Anyone can intercept your data packets and see what you're doing.
+2. The password is hard-coded for all the machines in setup.sh, and is publically available. Anyone who knows the IP address of your machines can log into them.  
+
 
 
 

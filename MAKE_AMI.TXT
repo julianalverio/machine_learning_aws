@@ -1,19 +1,27 @@
-## Paste the shit out of this into a clean ubuntu AMI (ami-00a208c7cdba991ea). It won't let you down.
+## Paste this into a clean ubuntu AMI (ami-00a208c7cdba991ea).
 
-
-
-
+# clone the repo
 git clone https://github.com/julianalverio/machine_learning_aws
+
+# Install conda
 sh /home/ubuntu/machine_learning_aws/Miniconda3-latest-Linux-x86_64.sh -p /home/ubuntu/conda -b
+
+# Initialize conda
 /home/ubuntu/conda/bin/conda init
+
+# Reset environment variables to ensure conda is ready to go
 source ~/.bashrc
+
+# copy condarc preferences to ensure everything goes smoothly when installing packages
 cp /home/ubuntu/machine_learning_aws/.condarc /home/ubuntu/.condarc
+
+# create conda environment from template
 conda env create -f /home/ubuntu/machine_learning_aws/environment.yml -n conda_env
 
+# add cronjob. Upon booting, this will pull the latest version of the repo from git and run setup.sh. See setup.sh for more details.
 echo "@reboot sudo -i -u ubuntu git -C /home/ubuntu/machine_learning_aws pull && . /home/ubuntu/machine_learning_aws/setup.sh" >> /home/ubuntu/mycron
 crontab /home/ubuntu/mycron
 rm mycron
 
-
+# Allow for ssh-ing into the machine with a password
 cat /etc/ssh/sshd_config | sed 's/PasswordAuthentication no/PasswordAuthentication yes/' > ~/sshd_config && chmod 644 ~/sshd_config && sudo mv ~/sshd_config /etc/ssh/sshd_config
-
