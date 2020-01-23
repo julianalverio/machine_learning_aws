@@ -316,11 +316,12 @@ if __name__ == "__main__":
     parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-0a1441e28a9efae69')
     parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
+    parser.add_argument('--email', action='store_true')
     args = parser.parse_args()
 
     assert sum([int(args.start), int(args.stop),
-                int(args.backup), int(args.info)]) == 1, \
-        'Must select exactly 1 among: start, stop, backup, or info'
+                int(args.backup), int(args.info), int(args.email)]) == 1, \
+        'Must select exactly 1 among: start, stop, backup, email, and info'
 
     if args.info:
         handler.map_machine_info()
@@ -329,6 +330,9 @@ if __name__ == "__main__":
         handler = AWSHandler(args.path, read=True)
     else:
         handler = AWSHandler(args.path, read=False)
+
+    if args.email:
+        handler.mail_to_list()
 
     if args.stop:
         assert input('Are you sure you want to kill all the machines? :( ') == 'YES'
