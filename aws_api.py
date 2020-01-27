@@ -315,7 +315,7 @@ if __name__ == "__main__":
     parser.add_argument('--info', action='store_true')
     parser.add_argument('--path', default='users.csv')
     parser.add_argument('--ami', default='ami-0a1441e28a9efae69')
-    parser.add_argument('--type', default='t3a.xlarge')  # g3.4xlarge for GPUs
+    parser.add_argument('--type', default='t3a.2xlarge')  # g3.4xlarge for GPUs
     parser.add_argument('--email', action='store_true')
     args = parser.parse_args()
 
