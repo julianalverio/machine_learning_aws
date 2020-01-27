@@ -30,3 +30,9 @@ student_code/*
 
 # No pickle files
 *.pkl
+
+# Downloaded tar
+*.tar.gz
+
+# wget
+*wget-log
