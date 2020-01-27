@@ -6,8 +6,6 @@ email_credentials.txt
 *.docx
 *.csv
 hosts.txt
-*.jpeg
-*.jpg
 *.h5
 *.hdf5
 *.h*
