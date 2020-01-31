@@ -1,8 +1,10 @@
 # AWS for Machine Learning
-This repository has a backup of the students' work from the class for the students to view. Each student's code is backed up to student_code/USERNAME, where the USERNAME is everything that comes before the "@" in the student's email address, with any non-english a-z characters deleted, and all characters lowercased. For example, éstuianté!@example.com would find her code under `student_copes/stdudiant`.
-The instructor's version of the code is found under `instructor_code/`
-
+All code used for the course is found under `instructor_code`.
 This repository also has our infrastructure for setting up EC2 machines each day.
+
+# Acknowledgement
+This project is powered by Dopesauce&trade; 
+![](dopesauce.gif)
 
 
 ## Jupyter Notebooks for Machine Learning
