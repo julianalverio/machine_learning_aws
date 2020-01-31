@@ -1,4 +1,6 @@
 # AWS for Machine Learning
+This project is powered by Dopesauce&trade; 
+![](dopesauce.gif)
 ## Guidelines for Using this API
 
 ### Overview
