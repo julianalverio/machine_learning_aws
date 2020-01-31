@@ -115,7 +115,7 @@ Select any `.ipynb` file, and open it.  Once the notebook is loaded, find the to
 From here, the user can edit/create/delete files in Jupyter.  For future login and use of this Anaconda environment, the user will simply need to open a Jupyter notebook and ensure that the kernel `local_env` is selected.
 
 #### Installing TensorFlow 2.1 on Your Local Machines
-Since GPU installations of TensorFlow can cause errors on certain OSs, by default we only install the package `tensorflow_cpu==1.15`.  To install TensorFlow 2.1, following these instructions (inside your conda environment):
+To install TensorFlow 2.1, following these instructions (inside your conda environment):
 
 1. Activate your conda environment:
 
