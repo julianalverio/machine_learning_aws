@@ -4,28 +4,28 @@ This project is powered by Dopesauce&trade; <br>
 ## Guidelines for Using this API
 
 ### Overview
-For the GSL-Uruguay program, we implemented an API using Python (`boto3`) and Bash to set up AWS EC2 instances for our students.  We created these instances because we (1) were able to acquire AWS credits for this program, and (2) to provide computing power and appropriate computing environments (to make sure that all package and software requirements for this class are compatible across different operating systems and versions).  We outline the basics of this API below, and have shared links to our GitHub repository and custom Amazon Machine Image (AMI).
+For the GSL-Uruguay program, we implemented an AWS API using Python (`boto3`) and Bash to set up AWS EC2 instances for our students.  We created these instances because we (1) were able to acquire AWS credits for this program, and (2) to provide computing power and appropriate computing environments for our students (to make sure that all package and software requirements for this class are compatible across different operating systems and software versions).  We outline the basics of this API below, and have shared links to our GitHub repository and custom Amazon Machine Image (AMI).
 
 ### Installation & Preparation
 To use this system, make sure you have made the following preparations:
 
 1. Clone the GitHub repo [here](https://github.com/julianalverio/machine_learning_aws).
 2. Make sure you have a Python interpreter set up on your computer.
-3. Make sure you have an active AWS account (ideally with credits, to avoid receiving personal charges), and make sure you have a secret .pem key associated with this account.
-4. Make sure you have the libraries `boto3` and `pandas` installed - these can both be installed via pip or conda.
+3. Make sure you have an active AWS account (ideally with credits, to avoid receiving personal charges), and make sure you have a secret `.pem` key associated with this account.  See [this guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) for installing `aws_cli` for configuring your key files.
+4. Make sure you have the libraries `boto3` and `pandas` installed - these can both be installed via pip or conda.  We will need these packages when configuring instances through the Python API.
 
 ### Instance Management Guide
 After completing the installation requirements above, you can follow the steps below to set up custom AMI instances for your students:
 
-1. Make sure your secret key `.pem` file lies in the same directory as your cloned `machine_learning_aws` repository.  This is important when starting/terminating instances using the command line and `boto3`.  If you need to set up your AWS account that you plan to link for this program, see the section below: "Tips for setting up machines like these on another AWS account".  Please remember to NEVER push this `.pem` file to GitHub.
+1. Make sure your secret key `.pem` file lies in the same directory as your cloned `machine_learning_aws` repository.  This is important when starting/terminating instances using the command line and `boto3`.  If you need to set up your AWS account that you plan to link for this program, see the section below: "Tips for setting up machines like these on another AWS account".  Please remember to **NEVER** push this `.pem` file to GitHub.
 
 2. If you need to make any modifications to the [Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) (the virtual image that is created with each new instance), make these modifications in [MAKE_AMI.txt](https://github.com/julianalverio/machine_learning_aws/blob/master/MAKE_AMI.TXT) (you'll copy and paste the contents of this file to an Ubuntu instance). From here, you can create a new AMI based off of the original AMI by following instructions 3-7 from the section below "Tips for setting up machines like these on another AWS account".
 
-3. Once you're ready to use our custom AMI or your own custom AMI (our custom AMI id: `ami-0c505f47bff8ab1b2`), you can do so by running the following command on a command line:
+3. Once you're ready to start instances using our custom AMI or your own custom AMI (our custom AMI id: `ami-0c505f47bff8ab1b2`), you can do so by running the following command on a command line: `python aws_api.py --start`. This will create instances according to the information in `users.csv`, which should **not** be pushed to GitHub for user's privacy but should be stored on the local machines that are starting/stopping these instances.  For formatting the `users.csv` file, make the first column the user's name (what will be emailed to each student when they receive their credentials), and the second column the user's email.  **Note**: The number of instances created will be the number of rows (users) present in `users.csv`.
 
-`python aws_api.py --start`
+4. When you're ready to terminate the students' instances (we did this every day to have the machines automatically pull new lessons from GitHub), you can do so by running the following command on a command line: `python aws_api.py --stop`.
 
-This will create instances according to the information in `users.csv`, which should **not** be pushed to GitHub for user's privacy should be stored on the local machines that are starting/stopping these instances.
+**NOTE**: The file `aws_api.py` also has other optional flags.  Run `aws_api.py --help` to view these different flags and their explanations.  By default, when running this script, exactly one option of `--start`, `--stop`, `--backup`, `--info`, or `--email` must be selected.
 
 ### Tips for setting up machines like these on another AWS account
 1. Load AWS credits onto someone's account.
@@ -42,9 +42,9 @@ This will create instances according to the information in `users.csv`, which sh
 7. Once all of this is set up you can go to the EC2 console, select your instance, click  action --> images -->  create image. Follow the prompts so  create a new  AMI. You can now  start up  a machine that will be identical to the one from before.  Any datasets you loaded onto the machine to start will also be copies to subsequent  copies.  
 
 ### Security
-This whole process is very insecure, and is only usable for teaching purposes. DO NOT use this for anything intellectual property sensitive.
-1. The way we set it up, the jupyter notebooks are unencrypted and do not require a password. Anyone can intercept your data packets and see what you're doing.
-2. The password is hard-coded for all the machines in setup.sh, and is publically available. Anyone who knows the IP address of your machines can log into them.
+This whole process is very insecure, and is only usable for teaching purposes. DO NOT use this for anything intellectual property-sensitive.
+1. The way we set up these instances, the jupyter notebooks are unencrypted and do not require a password. Anyone can intercept your data packets and see what you're doing.
+2. The password is hard-coded for all the machines in `setup.sh`, and is publically available. Anyone who knows the IP address of your machines can log into them.
 
 
 This repository has a backup of the students' work from the class for the students to view. Each student's code is backed up to student_code/USERNAME, where the USERNAME is everything that comes before the "@" in the student's email address, with any non-english a-z characters deleted, and all characters lowercased. For example, éstuianté!@example.com would find her code under `student_copes/stdudiant`.
