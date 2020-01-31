@@ -210,6 +210,7 @@ class AWSHandler(object):
             server.sendmail('machinelearning.uruguay@gmail.com', email, text)
             print('Sent email %s out of %s' % ((idx + 1), num_users))
 
+        # Notify user that emails have finished sending
         print('Done sending emails.')
 
     def map_machine_info(self):
@@ -224,6 +225,10 @@ class AWSHandler(object):
         """Helper function for backing up the machines - can be configured so as
         to ensure that user's content is only overwritten in an intelligent
         way."""
+
+        # Notify user that we are using custom overwrite
+        print("Making custom overwrites")
+
         root_path = os.path.join(os.getcwd(), "student_code")
         users = os.listdir(root_path)
 
@@ -232,7 +237,7 @@ class AWSHandler(object):
             daily_user = os.path.join(root_path, user, "daily_user")
             try:
                 files = os.listdir(daily_user)
-            except:
+            except FileNotFoundError:
                 print("Daily User path not found")
                 files = []
             # Iterate through files
@@ -248,9 +253,11 @@ class AWSHandler(object):
             # Remove daily user
             remove_command = "rm -r %s" % (daily_user)
             os.system(remove_command)
+
+        # Notify that custom overwrite has been finished
         print("Overwrite finished!")
 
-    def backup_machines(self):
+    def backup_machines(self, custom_overwrite=False):
         """Back up student-populated content from the
         course to GitHub in the 'daily_user' sub-directory.
         """
@@ -275,8 +282,19 @@ class AWSHandler(object):
                               credential_path, ip_address, local_save_dir)
             os.system(scp_command)
 
-            # Now overwrite in an intelligent way - may need to be customized
+        # Overwrite in an intelligent way (i.e. only files from that day)
+        # NOTE: This is currently hardcoded
+        if custom_overwrite:
             self.intelligent_overwrite()
+
+        # Now push changes to GitHub
+        os.system('git add .')
+        os.system('git commit -m "Backed up Jupyter Notebooks %s"' % (
+            time.time()))
+        os.system('git push')
+
+        # Notify user that machines are backed up
+        print("Machines have been backed up!")
 
 
     def start_instances(self, count, ami, instance_type='t3a.xlarge'):
