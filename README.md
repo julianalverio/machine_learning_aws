@@ -39,29 +39,31 @@ After completing the installation requirements above, you can follow the steps b
 - set a cronjob to run at boot time
 - allow for ssh-ing with passwords.
 6. You don't have to do anything for this step. At boot time, `setup.sh` will run. It will set the password, pull the latest version of the repo, and set up a jupyter notebook server. To interact with the jupyter notebook, set up port forwarding as follows: `ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP_ADDRESS>`.  
-7. Once all of this is set up you can go to the EC2 console, select your instance, click  action --> images -->  create image. Follow the prompts so  create a new  AMI. You can now  start up  a machine that will be identical to the one from before.  Any datasets you loaded onto the machine to start will also be copies to subsequent  copies.  
+7. Once all of this is set up you can go to the EC2 console, select your instance, click  action --> images --> create image. Follow the prompts to create a new AMI. You can now start up a machine that will be identical to the one from before.  Any datasets you loaded onto the machine to start will also be copies to subsequent copies.  
 
 ### Security
 This whole process is very insecure, and is only usable for teaching purposes. DO NOT use this for anything intellectual property-sensitive.
 1. The way we set up these instances, the jupyter notebooks are unencrypted and do not require a password. Anyone can intercept your data packets and see what you're doing.
 2. The password is hard-coded for all the machines in `setup.sh`, and is publically available. Anyone who knows the IP address of your machines can log into them.
 
+### Backing Up Student Code
+This repository also has built-in capabilities to create backups of the students' work from the class for the students to view. This backup process can be run by calling the class method `backup_machines()` within `aws_api.py`.  When this class method is called, students' code is backed up to `student_code/USERNAME`, where the USERNAME is everything that comes before the "@" in the student's email address, with any non-alphanumeric characters deleted, and all remaining characters lowercased. For example, éstuianté!@example.com would find their code under `student_copes/stdudiant`.
 
-This repository has a backup of the students' work from the class for the students to view. Each student's code is backed up to student_code/USERNAME, where the USERNAME is everything that comes before the "@" in the student's email address, with any non-english a-z characters deleted, and all characters lowercased. For example, éstuianté!@example.com would find her code under `student_copes/stdudiant`.
-The instructor's version of the code is found under `instructor_code/`
+### Instructors' Code
+The instructor's version of the code can be found under `instructor_code/`.  These files can be modified accordingly - we recommend that if you don't plan on running Jupyter notebooks on an AWS machine while you are presenting, that you keep separate Jupyter notebook files for both AWS/non-AWS machines to avoid path conflicts.
 
 ## Jupyter Notebooks for Machine Learning
 One of the primary purposes of this repository is to maintain a persistent state for our interactive teaching code base, which includes both template and student-edited Jupyter notebooks.  Instructions for accessing template Jupyter notebooks, student Jupyter notebooks, and data are each discussed individually below:
 
-1. **Jupyter Notebook under `instructor_code`**: These are template for the student to modify.
-2. **Jupyter Notebook Files for Students**: We will copy the template notebooks from `instructor_code` to a location where the students can use it every day. For now, the location is `machine_learning_aws/daily_use`, though this location may change as we continue the development of this repository.
+1. **Jupyter Notebook under `instructor_code`**: These are templates for the student to modify.
+2. **Jupyter Notebook Files for Students**: We will copy the template notebooks from `instructor_code` to a location where the students can use it every day. For now, the location is `machine_learning_aws/daily_user`, though this location may change as we continue the development of this repository.
 3. **Data for Students**: Data for this course can be found on the EC2 instances under the `machine_learning_aws/data/` sub-directory in the `machine_learning_aws/` repository, or through the absolute path `/home/ubuntu/machine_learning_aws/data/`.
-
+Note that this data already exists on our custom AMI.
 
 ## Installing and Configuring Conda Environment on EC2 Instances: Ubuntu AMI
 We designed the login and student setup process for these machines to be as straightforward and efficient as possible.  Upon startup of the EC2 instances (when the instances are initialized), a `tmux` session is opened, the conda environment `conda_env` is activated, a `jupyter notebook` command with port assignment is set up, and then the `tmux` session automatically detaches.  This ensures that the Jupyter notebook will continue to run remotely even if there is a loss in ssh connection.
 
-Therefore, the only steps that need to be taken for login are the following (students receive these via email whenever new instances are created):
+Therefore, the only steps that need to be taken for login are the following (students receive these via email whenever new instances are created, which ideally should happen whenever new/updated code is released for the students to use):
 
 1. ssh port forwarding (to listen to the remote EC2 Jupyter notebook):
 
@@ -80,7 +82,7 @@ a. Mac/Linux users: Type the command `pkill -f 5005`, and repeat step 1.
 b. Windows users: Restart/reboot your computer.
 
 ## Installing and Configuring Conda Environment on Local Machines:
-To provide our students with local access and practice to the machine learning resources/concepts taught in this course, we have also created a framework for our students to work on this code in their own Anaconda environments.  Our team created a distributable Anaconda environment that contains all the necessary Python packages needed for this course called `local_environment.yml`, which can be accessed through this repository.  Users can set up this conda environment and add it to their Jupyter notebook through the following steps:
+To provide our students with local access and practice to the machine learning resources/concepts taught in this course, we have also created a framework for our students to work on this code in their own Anaconda environments.  Our team created a distributable Anaconda environment that contains all the necessary Python packages needed for this course called `local_requirements.txt`, which can be accessed through this repository.  Users can set up this conda environment and add it to their Jupyter notebook through the following steps:
 
 1. After downloading Anaconda, open an Anaconda prompt (Windows) or a command line (Max/Linux), and change your working directory to the local version of this repository.  From here, follow the OS-agnostic commands below:
 
@@ -136,9 +138,3 @@ To install TensorFlow 2.1, following these instructions (inside your conda envir
 
 ## Credits
 Thank you to the MIT GSL and Amazon AWS Educate teams for providing us with Amazon computing resources for this course.
-
-
-
-
-
-
