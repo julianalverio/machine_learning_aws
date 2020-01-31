@@ -13,14 +13,31 @@ To use this system, make sure you have made the following preparations:
 3. Make sure you have an active AWS account (ideally with credits, to avoid receiving personal charges), and make sure you have a secret .pem key associated with this account.
 4. Make sure you have the libraries `boto3` and `pandas` installed - these can both be installed via pip or conda.
 
+### Instance Management Guide
+After completing the installation requirements above, you can follow the steps below to set up custom AMI instances for your students:
+
+1. Make sure your secret key `.pem` file lies in the same directory as your cloned `machine_learning_aws` repository.  This is important when starting/terminating instances using the command line and `boto3`.  If you need to set up your AWS account that you plan to link for this program, see the section below: "Tips for setting up machines like these on another AWS account".  Please remember to NEVER push this `.pem` file to GitHub.
+
+2. If you need to make any modifications to the [Amazon Machine Image (AMI)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html) (the virtual image that is created with each new instance), make these modifications in [MAKE_AMI.txt](https://github.com/julianalverio/machine_learning_aws/blob/master/MAKE_AMI.TXT) (you'll copy and paste the contents of this file to an Ubuntu instance). From here, you can create a new AMI based off of the original AMI by following instructions 3-7 from the section below "Tips for setting up machines like these on another AWS account".
+
+3. Once you're ready to use our custom AMI or your own custom AMI (our custom AMI id: `ami-0c505f47bff8ab1b2`), you can do so by running the following command on a command line:
+
+`python aws_api.py --start`
+
+This will create instances according to the information in `users.csv`, which should **not** be pushed to GitHub for user's privacy should be stored on the local machines that are starting/stopping these instances.
 
 ### Tips for setting up machines like these on another AWS account
 1. Load AWS credits onto someone's account.
 2. Generate a .pem key. Keep this VERY secure and NEVER push this to github. Automated scrapers will steal your key and spent your money.
-3. Start up an ubuntu AMI (ami-00a208c7cdba991ea).
-4. Look up its ip address on the EC2 console. ssh into the machine using ssh -i /path/to/pem ubuntu@ip_address.
-5. Paste the commands from make_ami.txt. See make_ami.txt to see what each line does. It will: clone the repo, install conda and initialize, build a conda env, set a cronjob to run at boot time, and allow for ssh-ing with passwords.
-6. You don't have to do anything for this step. At boot time, setup.sh will run. It will set the password, pull the latest version of the repo, and set up a jupyter notebook server. To interact with the jupyter notebook, set up port forwarding as follow: ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP_ADDRESS>.  
+3. Start up an ubuntu AMI (AMI id: `ami-00a208c7cdba991ea`).
+4. Look up its ip address on the EC2 console. ssh into the machine using `ssh -i /path/to/pem ubuntu@<IP_ADDRESS>`.
+5. Paste the commands one at a time from `MAKE_AMI.txt`. See `MAKE_AMI.txt` to see what each line does. It will: 
+- clone the repo
+- install conda and initialize
+- build a conda env
+- set a cronjob to run at boot time
+- allow for ssh-ing with passwords.
+6. You don't have to do anything for this step. At boot time, `setup.sh` will run. It will set the password, pull the latest version of the repo, and set up a jupyter notebook server. To interact with the jupyter notebook, set up port forwarding as follows: `ssh -o "StrictHostKeyChecking no" -NfL 5005:localhost:8888 ubuntu@<IP_ADDRESS>`.  
 7. Once all of this is set up you can go to the EC2 console, select your instance, click  action --> images -->  create image. Follow the prompts so  create a new  AMI. You can now  start up  a machine that will be identical to the one from before.  Any datasets you loaded onto the machine to start will also be copies to subsequent  copies.  
 
 ### Security
