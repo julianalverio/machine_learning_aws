@@ -1,7 +1,7 @@
 numpy 
 scipy
 scikit-learn
-tensorflow_cpu==2.1.0
+tensorflow_cpu==2.8.4
 keras
 nltk
 joblib
